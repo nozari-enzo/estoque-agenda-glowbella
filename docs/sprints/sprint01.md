@@ -5,8 +5,9 @@
 - **Projeto:** GlowBella
 - **Número da Sprint:** 1
 - **Período:** 17/09 a 24/09
-- **Integrantes:** Amanda, Enzo, Yuri, Pedro e Rafael
+- **Integrantes:** Amanda, Davi, Enzo, Yuri, Pedro e Rafael
 - **Scrum Master da Equipe:** Amanda
+- **Product Owner:** Pedro
 
 ### Meta da Sprint
 
@@ -14,11 +15,7 @@
 
 **Meta:**
 
-Coletar informações com o cliente, entendendo quais as principais demandas e funcionalides preferidas.
-Organização das ferramentas para o desenvolvimento do projeto, repositório, trello, etc.
-Entregar um Wireframe inicial com o desing do sistema.
-
-
+Definir o escopo do projeto com base na reunião com o cliente, definindo os pontos principais a serem resolvidos e os extras que podemos oferecer com o projeto.
 
 
 ---
