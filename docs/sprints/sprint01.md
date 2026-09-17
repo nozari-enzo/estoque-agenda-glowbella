@@ -25,26 +25,6 @@ Entregar um Wireframe inicial com o desing do sistema.
 
 ## 2. Resultado da Sprint
 
-### Situação da meta
-Coletar informações com o cliente, entendendo quais as principais demandas e funcionalides preferidas.
-- [X] Alcançada
-- [ ] Parcialmente alcançada
-- [ ] Não alcançada
-
-
-
-Organização das ferramentas para o desenvolvimento do projeto, repositório, trello, etc.
-- [ ] Alcançada
-- [X] Parcialmente alcançada
-- [ ] Não alcançada
-
-
-
-Entregar um Wireframe inicial com o desing do sistema.
-- [ ] Alcançada
-- [ ] Parcialmente alcançada
-- [X] Não alcançada
-
 ### Resultado alcançado
 
 > Descreva brevemente quais funcionalidades ou resultados foram concluídos e estão funcionando ao final da sprint.
@@ -61,7 +41,6 @@ Entregar um Wireframe inicial com o desing do sistema.
 **Dificuldade ou impedimento:**
 
 
-
 ---
 
 ## 3. Itens planejados e situação final
@@ -76,6 +55,23 @@ Entregar um Wireframe inicial com o desing do sistema.
 | User Story ou item | Responsável(is) | Situação final | Observação |
 |---|---|---|---|
 
+### Situação da meta
+Coletar informações com o cliente, entendendo quais as principais demandas e funcionalides preferidas.
+- [X] Alcançada
+- [ ] Parcialmente alcançada
+- [ ] Não alcançada
+
+
+Organização das ferramentas para o desenvolvimento do projeto, repositório, trello, etc.
+- [ ] Alcançada
+- [X] Parcialmente alcançada
+- [ ] Não alcançada
+
+
+Entregar um Wireframe inicial com o desing do sistema.
+- [ ] Alcançada
+- [ ] Parcialmente alcançada
+- [X] Não alcançada
 
 ---
 
