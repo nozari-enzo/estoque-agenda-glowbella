@@ -4,7 +4,7 @@
 
 - **Projeto:** GlowBella
 - **Número da Sprint:** 1
-- **Período:** 17/09 a 24/09
+- **Período:** 10/09 a 24/09
 - **Integrantes:** Amanda, Davi, Enzo, Yuri, Pedro e Rafael
 - **Scrum Master da Equipe:** Amanda
 - **Product Owner:** Pedro
@@ -28,8 +28,8 @@ Definir o escopo do projeto com base na reunião com o cliente, definindo os pon
 
 **Resultado:**
 
-
-
+> Drive da equipe organizado com os documentos do projeto.
+> Link do Drive: https://drive.google.com/drive/folders/1dVXk9-BgNslFYT-9UPtiizlivMcOYVCs
 
 ### Principal dificuldade ou impedimento
 
@@ -37,7 +37,7 @@ Definir o escopo do projeto com base na reunião com o cliente, definindo os pon
 
 **Dificuldade ou impedimento:**
 
-
+Nessa etapa não encontramos dificuldades ou impedimentos.
 ---
 
 ## 3. Itens planejados e situação final
@@ -60,15 +60,15 @@ Coletar informações com o cliente, entendendo quais as principais demandas e f
 
 
 Organização das ferramentas para o desenvolvimento do projeto, repositório, trello, etc.
-- [ ] Alcançada
-- [X] Parcialmente alcançada
+- [X] Alcançada
+- [ ] Parcialmente alcançada
 - [ ] Não alcançada
 
 
 Entregar um Wireframe inicial com o desing do sistema.
-- [ ] Alcançada
+- [X] Alcançada
 - [ ] Parcialmente alcançada
-- [X] Não alcançada
+- [ ] Não alcançada
 
 ---
 
@@ -83,9 +83,9 @@ Entregar um Wireframe inicial com o desing do sistema.
 
 ### Checklist de qualidade
 
-- [ ] Os itens marcados como concluídos atendem aos critérios de aceite.
-- [ ] As funcionalidades entregues foram testadas pela equipe.
-- [ ] O código atualizado está no repositório oficial.
+- [X] Os itens marcados como concluídos atendem aos critérios de aceite.
+- [X] As funcionalidades entregues foram testadas pela equipe.
+- [X] O código atualizado está no repositório oficial.
 - [ ] Os problemas conhecidos estão registrados no Kanban ou no repositório.
 
 ### Problemas conhecidos
@@ -94,8 +94,7 @@ Entregar um Wireframe inicial com o desing do sistema.
 
 **Registro:**
 
-A autenticação ainda não está integrada ao frontend. A mensagem apresentada
-quando o usuário informa um e-mail já cadastrado também precisa ser melhorada.
+Problemas na pontualidade nas reuniões de Sprint.
 
 ---
 
@@ -107,7 +106,7 @@ quando o usuário informa um e-mail já cadastrado também precisa ser melhorada
 
 **Registro:**
 
-O trabalho em pares facilitou a integração entre frontend e backend.
+Boa comunicação entre os integrantes do grupo.
 
 ### Melhorar
 
@@ -115,8 +114,7 @@ O trabalho em pares facilitou a integração entre frontend e backend.
 
 **Registro:**
 
-A equipe precisa avaliar as dependências técnicas antes de iniciar uma
-User Story.
+Pontualidade nas reuniões da Sprint.
 
 ### Agir
 
@@ -124,7 +122,7 @@ User Story.
 
 **Ação:**
 
-Realizar uma verificação técnica das integrações no meio da próxima sprint.
+Com base no feedback do cliente, vamos analizar e definir as tecnologias que serão utilizadas no projeto, assim iniciando os primeiros protótipos.
 
 ---
 
@@ -136,15 +134,14 @@ Realizar uma verificação técnica das integrações no meio da próxima sprint
 
 **Meta:**
 
-Permitir que o usuário faça login e acesse a área autenticada do sistema.
+Primeiros protótipos de Front-End da página inicial do projeto.
 
 ### Itens inicialmente selecionados
 
 | User Story ou item | Responsável(is), se definido(s) | Resultado esperado |
 |---|---|---|
-| US02 – Login de usuário | Bruno e Daniela | Login integrado ao backend |
-| US03 – Área autenticada | Ana e Carlos | Usuário autenticado visualiza a página inicial |
-| Melhorar mensagem de e-mail duplicado | Carlos | Mensagem clara para o usuário |
+| US02 – Home page | Rafael | Protótipo de Página Home |
+| US03 – Repositório GitHub branchs | Enzo | Repositório organizado com features comitadas para branch-dev antes de ir para main |
 
 > Esta é uma seleção inicial. O planejamento poderá ser ajustado pela equipe no início da próxima sprint.
 
@@ -154,6 +151,4 @@ Permitir que o usuário faça login e acesse a área autenticada do sistema.
 
 **Riscos:**
 
-A equipe ainda precisa compreender melhor a biblioteca de autenticação utilizada.
-Se a dificuldade continuar, será necessário simplificar a solução ou solicitar
-orientação técnica.
+Nenhum risco identificado.
