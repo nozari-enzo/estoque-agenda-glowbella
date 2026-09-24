@@ -168,7 +168,8 @@ main  ← PR no fim de cada sprint (versão estável)
    ```bash
    git push -u origin feature/cadastro-produtos
    ```
-4. Outro integrante revisa e aprova o PR. Depois do merge, a branch pode ser apagada.
-5. No fim da sprint, é aberto um PR da `dev` para a `main`.
+4. Preencha o modelo do PR (ele aparece automaticamente). Outro integrante revisa e aprova. Depois do merge, a branch pode ser apagada.
+5. Se o PR trouxe migrations novas, todos rodam `database\migrar.php` depois de puxar a `dev`.
+6. No fim da sprint, é aberto um PR da `dev` para a `main`.
 
 **Nunca faça push direto na `main`.**
