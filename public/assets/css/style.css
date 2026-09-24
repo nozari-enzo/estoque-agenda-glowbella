@@ -375,3 +375,98 @@ h1, h2, h3, .titulo-elegante {
     font-size: 0.8rem;
     white-space: pre-wrap;
 }
+
+/* ---------- Home ---------- */
+
+.boas-vindas {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    overflow: hidden;
+    background: linear-gradient(120deg, #fff 55%, var(--glow-primaria-clara));
+}
+
+.boas-vindas > div {
+    position: relative;
+    z-index: 1; /* texto sempre por cima do ícone decorativo */
+}
+
+.boas-vindas h1 {
+    font-size: 2rem;
+}
+
+.boas-vindas-data {
+    margin-bottom: 0.25rem;
+    color: var(--glow-dourado);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.boas-vindas-icone {
+    font-size: 6rem;
+    line-height: 1;
+    color: var(--glow-primaria);
+    opacity: 0.15;
+}
+
+@media (max-width: 575.98px) {
+    .boas-vindas {
+        padding: 1.5rem;
+    }
+
+    .boas-vindas-icone {
+        position: absolute;
+        right: -0.5rem;
+        bottom: -1rem;
+    }
+}
+
+.card-atalho {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-atalho:hover,
+.card-atalho:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(var(--glow-primaria-rgb), 0.18);
+    color: inherit;
+}
+
+.card-atalho h3 {
+    margin: 1rem 0 0.35rem;
+    font-size: 1.25rem;
+}
+
+.card-atalho p {
+    margin-bottom: 1rem;
+    color: #8a7f8d;
+    font-size: 0.9rem;
+}
+
+.card-atalho-total {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.card-atalho-total strong {
+    color: var(--glow-primaria);
+    font-size: 1.1rem;
+}
+
+.card-atalho-link {
+    margin-top: auto;
+    color: var(--glow-primaria);
+    font-size: 0.9rem;
+    font-weight: 600;
+}

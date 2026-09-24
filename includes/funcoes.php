@@ -89,3 +89,41 @@ function csrf_validar(): void
         exit('Sessão expirada ou formulário inválido. Volte e tente novamente.');
     }
 }
+
+/**
+ * Data por extenso em português, sem depender da extensão intl
+ * (que vem desligada no XAMPP).
+ *
+ *   data_por_extenso()              → quinta-feira, 24 de setembro de 2026
+ *   data_por_extenso('2026-12-25')  → sexta-feira, 25 de dezembro de 2026
+ */
+function data_por_extenso(?string $data = null): string
+{
+    $dias = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    $meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho',
+              'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+    $timestamp = $data ? strtotime($data) : time();
+
+    return sprintf(
+        '%s, %d de %s de %d',
+        $dias[(int) date('w', $timestamp)],
+        (int) date('j', $timestamp),
+        $meses[(int) date('n', $timestamp) - 1],
+        (int) date('Y', $timestamp)
+    );
+}
+
+/**
+ * "Bom dia", "Boa tarde" ou "Boa noite" conforme a hora atual.
+ */
+function saudacao(): string
+{
+    $hora = (int) date('G');
+
+    if ($hora < 12) {
+        return 'Bom dia';
+    }
+
+    return $hora < 18 ? 'Boa tarde' : 'Boa noite';
+}
