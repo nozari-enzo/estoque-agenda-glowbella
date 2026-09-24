@@ -112,11 +112,16 @@ $stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');
 $stmt->execute([$_GET['id'] ?? 0]);
 $produto = $stmt->fetch();
 
-$titulo = 'Editar produto';
+$titulo = 'Editar produto';   // título da aba do navegador
+$menu = 'produtos';            // item do menu que fica destacado
 require __DIR__ . '/../../includes/header.php';
 ?>
 
-<h1><?= e($produto['nome']) ?></h1>
+<div class="cabecalho-pagina">
+    <div>
+        <h1><?= e($produto['nome']) ?></h1>
+    </div>
+</div>
 
 <?php require __DIR__ . '/../../includes/footer.php'; ?>
 ```
@@ -136,6 +141,7 @@ require __DIR__ . '/../../includes/header.php';
 5. **Senhas** só com `password_hash()` / `password_verify()`.
 6. **Header e footer sempre via `require`**, nunca copiados.
 7. **Links sempre com `url()`**: `<a href="<?= url('produtos/') ?>">`.
+8. **Visual padronizado:** antes de criar uma tela, abra o **Guia de componentes** (http://localhost/estoque-agenda-glowbella/public/componentes.php) e copie o HTML de lá. Cores e estilos novos vão em `public/assets/css/style.css`, nunca em `style=""` dentro do HTML.
 
 ---
 
