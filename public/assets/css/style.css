@@ -1,0 +1,30 @@
+/*
+ * Estilos próprios da GlowBella.
+ * A identidade visual completa (cores, fontes) é a US05 (feature/layout-base).
+ */
+
+:root {
+    --glow-primaria: #b5477a;
+    --glow-primaria-escura: #8e3560;
+}
+
+.bg-glow {
+    background-color: var(--glow-primaria);
+}
+
+.text-glow {
+    color: var(--glow-primaria);
+}
+
+.btn-glow {
+    background-color: var(--glow-primaria);
+    border-color: var(--glow-primaria);
+    color: #fff;
+}
+
+.btn-glow:hover,
+.btn-glow:focus {
+    background-color: var(--glow-primaria-escura);
+    border-color: var(--glow-primaria-escura);
+    color: #fff;
+}
