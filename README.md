@@ -27,15 +27,7 @@ cd estoque-agenda-glowbella
 git checkout dev
 ```
 
-### 3. Criar o banco de dados
-
-1. Acesse http://localhost/phpmyadmin
-2. Vá na aba **SQL**
-3. Abra `database/migrations/000_criar_banco.sql`, cole o conteúdo e clique em **Executar**
-4. Selecione o banco **glowbella** e repita o passo 3 para os outros arquivos de `database/migrations/`, **em ordem numérica**
-5. (Opcional) Importe `database/seed.sql` para ter dados de exemplo
-
-### 4. Criar o arquivo de configuração
+### 3. Criar o arquivo de configuração
 
 Copie `config/config.example.php` para `config/config.php`:
 
@@ -46,6 +38,32 @@ copy config\config.example.php config\config.php
 Se você usa o XAMPP com o padrão (usuário `root` sem senha, projeto em `htdocs/estoque-agenda-glowbella`), não precisa mudar nada. Caso contrário, ajuste os dados no `config.php`.
 
 > O `config.php` **não vai para o GitHub**. Cada um tem o seu.
+
+### 4. Criar o banco de dados
+
+Com o MySQL ligado no XAMPP, rode no terminal (dentro da pasta do projeto):
+
+```bash
+C:\xampp\php\php.exe database\migrar.php --seed
+```
+
+Isso cria o banco `glowbella`, todas as tabelas e os dados de exemplo.
+
+- **Sempre que puxar a `dev`**, rode de novo `C:\xampp\php\php.exe database\migrar.php`. Ele só executa as migrations novas.
+- Para **apagar tudo e recriar do zero**: `C:\xampp\php\php.exe database\migrar.php --reset --seed`
+- **Login de teste** (criado pelo seed): `admin@glowbella.com` / `glowbella123`
+
+<details>
+<summary>Alternativa sem terminal (phpMyAdmin)</summary>
+
+1. Acesse http://localhost/phpmyadmin, aba **SQL**, cole o conteúdo de `database/migrations/000_criar_banco.sql` e clique em **Executar**
+2. Selecione o banco **glowbella** e, na aba **SQL**, execute os outros arquivos de `database/migrations/` **em ordem numérica**
+3. Execute `database/seed.sql` para ter dados de exemplo
+
+Não misture os dois jeitos: quem usa o phpMyAdmin deve continuar usando o phpMyAdmin.
+</details>
+
+O diagrama e as regras do banco estão em [`docs/banco-de-dados.md`](docs/banco-de-dados.md).
 
 ### 5. Acessar
 
@@ -107,7 +125,7 @@ require __DIR__ . '/../../includes/header.php';
 
 ## Regras da equipe
 
-1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `003_criar_clientes.sql`). Ao puxar a `dev`, importe os arquivos novos pelo phpMyAdmin. **Nunca edite um arquivo que já foi para a `dev`**: para alterar algo, crie um novo (ex.: `007_adiciona_foto_produtos.sql`).
+1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `003_criar_clientes.sql`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: para alterar algo, crie um novo (ex.: `007_adiciona_foto_produtos.sql`).
 2. **Sempre PDO com prepared statements.** Nunca coloque variáveis direto no SQL (evita SQL Injection).
    ```php
    $stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');
