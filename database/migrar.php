@@ -38,7 +38,12 @@ try {
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
 } catch (PDOException $erro) {
-    fwrite(STDERR, 'Erro ao conectar ao MySQL: ' . $erro->getMessage() . "\nO MySQL está ligado no XAMPP?\n");
+    $dica = match ((int) $erro->getCode()) {
+        1045    => 'Usuário ou senha do banco incorretos: confira DB_USER e DB_PASS em config/config.php.',
+        2002    => 'Não foi possível encontrar o MySQL: ele está ligado no XAMPP? Confira também DB_HOST e DB_PORT.',
+        default => 'Confira se o MySQL está ligado no XAMPP e os dados do banco em config/config.php.',
+    };
+    fwrite(STDERR, 'Erro ao conectar ao MySQL: ' . $erro->getMessage() . "\n" . $dica . "\n");
     exit(1);
 }
 
