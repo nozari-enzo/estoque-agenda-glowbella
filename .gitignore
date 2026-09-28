@@ -1,0 +1,17 @@
+# Configuração local (tem a senha do banco de cada um)
+config/config.php
+
+# Uploads feitos pelo sistema (fotos de produtos etc.)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
