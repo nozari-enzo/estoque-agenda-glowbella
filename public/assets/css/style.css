@@ -1,0 +1,472 @@
+/*
+ * Identidade visual da GlowBella.
+ *
+ * As cores ficam nas variáveis abaixo: para ajustar a paleta, mude só aqui.
+ * O Bootstrap foi "tematizado": use as classes normais dele (btn-primary,
+ * text-primary, bg-primary...) que elas já saem com as cores da GlowBella.
+ *
+ * Veja todos os componentes em: public/componentes.php
+ */
+
+/* ---------- Paleta e fontes ---------- */
+
+:root {
+    --glow-primaria: #b5477a;        /* rosa principal (botões, links, destaques) */
+    --glow-primaria-rgb: 181, 71, 122;
+    --glow-primaria-escura: #8e3560; /* hover dos botões */
+    --glow-primaria-clara: #f8e8ef;  /* fundos suaves, item ativo do menu */
+    --glow-dourado: #c9a27e;         /* detalhes em rose gold */
+    --glow-escuro: #2e2230;          /* menu lateral */
+    --glow-fundo: #faf7f8;           /* fundo das páginas */
+    --glow-borda: #eadfe4;
+
+    --glow-fonte-titulo: 'Playfair Display', Georgia, serif;
+    --glow-fonte-texto: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+    --glow-largura-menu: 250px;
+    --glow-raio: 0.75rem;
+    --glow-sombra: 0 1px 2px rgba(46, 34, 48, 0.04), 0 4px 16px rgba(46, 34, 48, 0.06);
+
+    /* Tema do Bootstrap */
+    --bs-primary: var(--glow-primaria);
+    --bs-primary-rgb: var(--glow-primaria-rgb);
+    --bs-primary-text-emphasis: var(--glow-primaria-escura);
+    --bs-primary-bg-subtle: var(--glow-primaria-clara);
+    --bs-primary-border-subtle: #eec3d6;
+    --bs-link-color: var(--glow-primaria);
+    --bs-link-color-rgb: var(--glow-primaria-rgb);
+    --bs-link-hover-color: var(--glow-primaria-escura);
+    --bs-link-hover-color-rgb: 142, 53, 96;
+    --bs-body-font-family: var(--glow-fonte-texto);
+    --bs-body-bg: var(--glow-fundo);
+    --bs-body-color: #3a3140;
+    --bs-border-color: var(--glow-borda);
+    --bs-border-radius: 0.5rem;
+    --bs-focus-ring-color: rgba(var(--glow-primaria-rgb), 0.25);
+}
+
+h1, h2, h3, .titulo-elegante {
+    font-family: var(--glow-fonte-titulo);
+    font-weight: 600;
+    color: var(--glow-escuro);
+}
+
+/* ---------- Bootstrap com as cores da GlowBella ---------- */
+
+.btn-primary {
+    --bs-btn-bg: var(--glow-primaria);
+    --bs-btn-border-color: var(--glow-primaria);
+    --bs-btn-hover-bg: var(--glow-primaria-escura);
+    --bs-btn-hover-border-color: var(--glow-primaria-escura);
+    --bs-btn-active-bg: var(--glow-primaria-escura);
+    --bs-btn-active-border-color: var(--glow-primaria-escura);
+    --bs-btn-disabled-bg: var(--glow-primaria);
+    --bs-btn-disabled-border-color: var(--glow-primaria);
+    --bs-btn-focus-shadow-rgb: var(--glow-primaria-rgb);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--glow-primaria);
+    --bs-btn-border-color: var(--glow-primaria);
+    --bs-btn-hover-bg: var(--glow-primaria);
+    --bs-btn-hover-border-color: var(--glow-primaria);
+    --bs-btn-active-bg: var(--glow-primaria-escura);
+    --bs-btn-active-border-color: var(--glow-primaria-escura);
+    --bs-btn-disabled-color: var(--glow-primaria);
+    --bs-btn-disabled-border-color: var(--glow-primaria);
+    --bs-btn-focus-shadow-rgb: var(--glow-primaria-rgb);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: #dd9dbb;
+    box-shadow: 0 0 0 0.25rem rgba(var(--glow-primaria-rgb), 0.2);
+}
+
+.form-check-input:checked {
+    background-color: var(--glow-primaria);
+    border-color: var(--glow-primaria);
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.pagination {
+    --bs-pagination-color: var(--glow-primaria);
+    --bs-pagination-hover-color: var(--glow-primaria-escura);
+    --bs-pagination-focus-color: var(--glow-primaria-escura);
+    --bs-pagination-active-bg: var(--glow-primaria);
+    --bs-pagination-active-border-color: var(--glow-primaria);
+}
+
+/* ---------- Estrutura: menu lateral + conteúdo ---------- */
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+.menu-lateral {
+    --bs-offcanvas-width: var(--glow-largura-menu);
+    --bs-offcanvas-bg: var(--glow-escuro);
+    --bs-offcanvas-color: #fff;
+    background-color: var(--glow-escuro);
+    color: #fff;
+}
+
+@media (min-width: 992px) {
+    .menu-lateral {
+        position: sticky;
+        top: 0;
+        flex: 0 0 var(--glow-largura-menu);
+        width: var(--glow-largura-menu);
+        height: 100vh;
+        /* o Bootstrap deixa o offcanvas-lg transparente no computador */
+        background-color: var(--glow-escuro) !important;
+    }
+}
+
+.menu-lateral .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+}
+
+.menu-marca {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem 1.5rem;
+    font-family: var(--glow-fonte-titulo);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+}
+
+.menu-marca:hover {
+    color: #fff;
+}
+
+.menu-marca .bi {
+    color: var(--glow-dourado);
+}
+
+.menu-lateral .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.5rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-weight: 500;
+}
+
+.menu-lateral .nav-link .bi {
+    font-size: 1.1rem;
+}
+
+.menu-lateral .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.menu-lateral .nav-link.active {
+    background-color: var(--glow-primaria);
+    color: #fff;
+}
+
+.menu-rodape {
+    margin-top: auto;
+    padding: 1rem 0.75rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.app-conteudo {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0; /* evita que tabelas largas estourem o layout */
+}
+
+.barra-topo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--glow-escuro);
+    color: #fff;
+}
+
+.barra-topo .menu-marca {
+    padding: 0;
+    font-size: 1.25rem;
+}
+
+.btn-menu {
+    padding: 0.25rem 0.5rem;
+    border: 0;
+    background: none;
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.app-principal {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+}
+
+@media (min-width: 992px) {
+    .app-principal {
+        padding: 2rem 2.5rem;
+    }
+}
+
+.app-rodape {
+    padding: 1rem;
+    border-top: 1px solid var(--glow-borda);
+    text-align: center;
+    font-size: 0.8rem;
+    color: #8a7f8d;
+}
+
+.app-rodape a {
+    color: inherit;
+}
+
+/* ---------- Componentes ---------- */
+
+/* Cabeçalho de página: título à esquerda, botões à direita */
+.cabecalho-pagina {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.cabecalho-pagina h1 {
+    margin: 0;
+    font-size: 1.75rem;
+}
+
+.cabecalho-pagina p {
+    margin: 0.25rem 0 0;
+    color: #8a7f8d;
+}
+
+/* Card padrão: sem borda, com sombra suave */
+.card-glow {
+    border: 0;
+    border-radius: var(--glow-raio);
+    background-color: #fff;
+    box-shadow: var(--glow-sombra);
+}
+
+/* Tabela dentro de um card-glow */
+.tabela-glow {
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.tabela-glow thead th {
+    border-bottom-width: 1px;
+    background-color: var(--glow-primaria-clara);
+    color: var(--glow-escuro);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.tabela-glow > :not(caption) > * > * {
+    padding: 0.85rem 1rem;
+}
+
+.tabela-glow .acoes {
+    width: 1%;
+    white-space: nowrap;
+    text-align: end;
+}
+
+/* Mensagem quando uma lista está vazia ou a página está em construção */
+.estado-vazio {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #8a7f8d;
+}
+
+.estado-vazio > .bi {
+    display: block;
+    margin-bottom: 1rem;
+    font-size: 3rem;
+    color: var(--glow-dourado);
+}
+
+.estado-vazio h2 {
+    font-size: 1.35rem;
+}
+
+/* Ícone redondo usado nos cards de atalho e resumos */
+.icone-circulo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: var(--glow-primaria-clara);
+    color: var(--glow-primaria);
+    font-size: 1.35rem;
+}
+
+/* Badges de status dos agendamentos */
+.status-agendado {
+    background-color: #e7f0fb;
+    color: #1f5c99;
+}
+
+.status-concluido {
+    background-color: #e3f4ea;
+    color: #1e6b3d;
+}
+
+.status-cancelado {
+    background-color: #f1eef1;
+    color: #6f6573;
+}
+
+/* Linha de produto com estoque baixo */
+.estoque-baixo {
+    --bs-table-bg: #fff6e5;
+}
+
+/* ---------- Guia de componentes ---------- */
+
+.guia-exemplo {
+    padding: 1.5rem;
+    border: 1px dashed var(--glow-borda);
+    border-radius: var(--glow-raio) var(--glow-raio) 0 0;
+    background-color: #fff;
+}
+
+.guia-codigo {
+    margin: 0 0 2.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 0 0 var(--glow-raio) var(--glow-raio);
+    background-color: var(--glow-escuro);
+    color: #f3e9ef;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+}
+
+/* ---------- Home ---------- */
+
+.boas-vindas {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    overflow: hidden;
+    background: linear-gradient(120deg, #fff 55%, var(--glow-primaria-clara));
+}
+
+.boas-vindas > div {
+    position: relative;
+    z-index: 1; /* texto sempre por cima do ícone decorativo */
+}
+
+.boas-vindas h1 {
+    font-size: 2rem;
+}
+
+.boas-vindas-data {
+    margin-bottom: 0.25rem;
+    color: var(--glow-dourado);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.boas-vindas-icone {
+    font-size: 6rem;
+    line-height: 1;
+    color: var(--glow-primaria);
+    opacity: 0.15;
+}
+
+@media (max-width: 575.98px) {
+    .boas-vindas {
+        padding: 1.5rem;
+    }
+
+    .boas-vindas-icone {
+        position: absolute;
+        right: -0.5rem;
+        bottom: -1rem;
+    }
+}
+
+.card-atalho {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-atalho:hover,
+.card-atalho:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(var(--glow-primaria-rgb), 0.18);
+    color: inherit;
+}
+
+.card-atalho h3 {
+    margin: 1rem 0 0.35rem;
+    font-size: 1.25rem;
+}
+
+.card-atalho p {
+    margin-bottom: 1rem;
+    color: #8a7f8d;
+    font-size: 0.9rem;
+}
+
+.card-atalho-total {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.card-atalho-total strong {
+    color: var(--glow-primaria);
+    font-size: 1.1rem;
+}
+
+.card-atalho-link {
+    margin-top: auto;
+    color: var(--glow-primaria);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
