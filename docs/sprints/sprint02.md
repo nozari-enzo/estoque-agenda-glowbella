@@ -60,11 +60,11 @@ Configuração inicial do ambiente e do repositório: permissões de acesso ao G
 
 | User Story ou item | Responsável(is) | Situação final | Observação |
 |---|---|---|---|
-| US02 – Página Home | Rafael | Concluído | Atalhos para os módulos com totais do banco. Ajustes finos conforme o wireframe podem ser feitos nas próximas sprints |
-| US03 – Organização do repositório | Enzo | Concluído | Fluxo `feature → dev → main`, modelo de PR e branches protegidas |
-| US04 – Setup inicial do projeto | Enzo | Concluído | Testado no XAMPP (Windows) |
-| US05 – Layout base e identidade visual | [preencher] | Concluído | Inclui guia de componentes em `public/componentes.php` |
-| US06 – Primeiras ideias Banco de Dados | [preencher] | Concluído | Diagrama e regras em `docs/banco-de-dados.md` |
+| US02 – Página Home |  | Concluído | Atalhos para os módulos com totais do banco. Ajustes finos conforme o wireframe podem ser feitos nas próximas sprints |
+| US03 – Organização do repositório |  | Concluído | Fluxo `feature → dev → main`, modelo de PR e branches protegidas |
+| US04 – Setup inicial do projeto |  | Concluído | Testado no XAMPP (Windows) |
+| US05 – Layout base e identidade visual |  | Concluído | Inclui guia de componentes em `public/componentes.php` |
+| US06 – Primeiras ideias Banco de Dados |  | Concluído | Diagrama e regras em `docs/banco-de-dados.md` |
 
 > Inclua somente as User Stories ou os itens principais planejados para a sprint.  
 > Não copie todas as tarefas menores do quadro Kanban.
