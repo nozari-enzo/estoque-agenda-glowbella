@@ -4,7 +4,7 @@
  * Mostra cada componente pronto e o HTML para copiar e colar nas páginas.
  * Só aparece no rodapé quando APP_DEBUG = true.
  */
-require __DIR__ . '/../includes/init.php';
+require __DIR__ . '/../app/bootstrap/init.php';
 
 /** Mostra o exemplo renderizado e, logo abaixo, o código dele. */
 function exemplo(string $titulo, string $html, string $descricao = ''): void
@@ -18,7 +18,7 @@ function exemplo(string $titulo, string $html, string $descricao = ''): void
 }
 
 $titulo = 'Guia de componentes';
-require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/../app/views/partials/header.php';
 ?>
 
 <div class="cabecalho-pagina">
@@ -177,4 +177,4 @@ exemplo('Lista vazia', <<<'HTML'
 HTML, 'Use sempre que uma listagem ou busca não tiver resultados.');
 ?>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require __DIR__ . '/../app/views/partials/footer.php'; ?>

@@ -3,7 +3,7 @@ Sistema de gerenciamento para uma loja de brincos e piercings, desenvolvido para
 
 ## Tecnologias
 
-- **Back-end:** PHP puro (8.2 ou superior) com PDO
+- **Back-end:** PHP puro (8.0 ou superior) com PDO
 - **Front-end:** HTML, CSS, JavaScript e Bootstrap 5
 - **Banco de dados:** MySQL / MariaDB
 - **Ambiente local:** XAMPP
@@ -79,19 +79,19 @@ Se a página de teste mostrar as versões do PHP e do MySQL, está tudo certo.
 ```
 estoque-agenda-glowbella/
 ├── config/                 Configuração (config.php é local e não vai pro Git)
-├── includes/               Arquivos PHP compartilhados (não acessíveis pelo navegador)
-│   ├── init.php            Carrega config, sessão, funções e conexão ($pdo)
-│   ├── conexao.php         Conexão PDO com o MySQL
-│   ├── funcoes.php         Funções úteis: e(), url(), redirecionar(), flash(), csrf_*()
-│   ├── header.php          Início do HTML, Bootstrap e menu
-│   └── footer.php          Rodapé e scripts
+├── app/                    Código compartilhado do servidor (bloqueado no navegador)
+│   ├── bootstrap/init.php  Inicializa config, sessão, funções e conexão ($pdo)
+│   ├── infrastructure/     Integração com o MySQL (conexao.php)
+│   ├── support/            Funções comuns (funcoes.php)
+│   └── views/partials/     Estrutura HTML comum (header.php e footer.php)
 ├── public/                 Páginas acessadas pelo navegador
 │   ├── index.php           Home
-│   ├── produtos/           Um módulo por pasta (index.php, criar.php, editar.php, excluir.php)
+│   ├── produtos/           Catálogo e protótipo de cadastro
 │   ├── clientes/
 │   ├── estoque/
+│   ├── esterilizacao/      Protótipo de histórico de ciclos
 │   ├── agendamentos/
-│   ├── assets/             css/, js/, img/
+│   ├── assets/             CSS, JavaScript e imagens
 │   └── uploads/            Fotos enviadas pelo sistema (não vão pro Git)
 ├── database/
 │   ├── migrations/         Arquivos SQL numerados (000_, 001_, 002_...)
@@ -99,38 +99,44 @@ estoque-agenda-glowbella/
 └── docs/                   Documentação e status reports das sprints
 ```
 
-### Modelo de página
+### Onde procurar cada coisa
 
-Toda página nova em `public/<modulo>/` segue este formato:
+- **Tela ou URL:** `public/` — cada módulo tem sua própria pasta; CSS, JavaScript e imagens ficam em `public/assets/`.
+- **Interface:** HTML renderizado pelas páginas PHP, Bootstrap 5 carregado pelo layout, estilos locais em `public/assets/css/style.css` e comportamentos de interface em `public/assets/js/app.js`.
+- **Configuração e conexão:** `config/` guarda as opções locais; `app/infrastructure/conexao.php` abre a conexão PDO.
+- **Inicialização e funções comuns:** `app/bootstrap/` e `app/support/`.
+- **Cabeçalho e rodapé compartilhados:** `app/views/partials/`.
+- **Tabelas e alterações no banco:** `database/migrations/`. Depois de publicada na branch da equipe, uma migration não deve ser editada; crie a próxima migration numerada.
+- **Regras e decisões do produto:** `docs/`.
 
-```php
-<?php
-require __DIR__ . '/../../includes/init.php';
+As páginas continuam acessíveis por `public/`. A pasta `app/` organiza o código usado por elas e não deve conter arquivos acessados diretamente pelo navegador. Ao implementar uma funcionalidade com regras ou consultas maiores, mantenha a tela em `public/<modulo>/` e separe a lógica do HTML dentro de `app/` para que a equipe encontre cada responsabilidade com facilidade.
 
-// lógica da página (consultas, processamento de formulário...)
-$stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');
-$stmt->execute([$_GET['id'] ?? 0]);
-$produto = $stmt->fetch();
+As telas de produtos, estoque e esterilização incluem protótipos visuais com dados demonstrativos. Os filtros e a exibição dos campos de lote/validade rodam somente no navegador; os botões de cadastro, movimentação e registro ainda não persistem dados. A integração deve ser feita depois que as regras e tabelas do back-end forem definidas.
 
-$titulo = 'Editar produto';   // título da aba do navegador
-$menu = 'produtos';            // item do menu que fica destacado
-require __DIR__ . '/../../includes/header.php';
-?>
+Para as próximas funcionalidades, use esta divisão quando ela fizer sentido:
 
-<div class="cabecalho-pagina">
-    <div>
-        <h1><?= e($produto['nome']) ?></h1>
-    </div>
-</div>
+- `public/<modulo>/`: entrada da URL e resposta HTTP.
+- `app/controllers/<modulo>/`: fluxo da tela e validação dos dados recebidos.
+- `app/repositories/<modulo>/`: consultas e gravações no MySQL usando PDO.
+- `app/views/<modulo>/`: HTML da tela; layouts comuns ficam em `app/views/partials/`.
 
-<?php require __DIR__ . '/../../includes/footer.php'; ?>
-```
+Não crie arquivos vazios só para preencher essas pastas. Ao começar uma funcionalidade, adicione apenas as partes necessárias e mantenha o mesmo nome de módulo nas camadas. Assim, por exemplo, tudo relacionado a produtos pode ser encontrado procurando por `produtos` nesses caminhos.
+
+### Fluxo de uma tela nova
+
+1. A URL e o ponto de entrada ficam em `public/<modulo>/`.
+2. O ponto de entrada carrega `app/bootstrap/init.php`.
+3. O controller do módulo valida a requisição e coordena a ação; o repository concentra o SQL e usa PDO.
+4. A view do módulo monta o HTML. Ela inclui os layouts compartilhados de `app/views/partials/`.
+5. CSS, JavaScript e imagens usados pelo navegador ficam em `public/assets/`.
+
+Para uma página realmente simples, não é necessário criar todas as camadas. Em telas com cadastro, edição ou regras de negócio, siga essa separação para que consultas, validações e HTML não se acumulem no mesmo arquivo.
 
 ---
 
 ## Regras da equipe
 
-1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `003_criar_clientes.sql`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: para alterar algo, crie um novo (ex.: `007_adiciona_foto_produtos.sql`).
+1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `008_alteracao_exemplo.sql`, após a migration atual `007`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: crie a próxima migration numerada.
 2. **Sempre PDO com prepared statements.** Nunca coloque variáveis direto no SQL (evita SQL Injection).
    ```php
    $stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');

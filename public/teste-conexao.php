@@ -3,13 +3,13 @@
  * Página para conferir se o ambiente está configurado corretamente.
  * Pode ser apagada antes do deploy.
  */
-require __DIR__ . '/../includes/init.php';
+require __DIR__ . '/../app/bootstrap/init.php';
 
 $versaoMysql = $pdo->query('SELECT VERSION()')->fetchColumn();
 $tabelas = $pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
 
 $titulo = 'Teste de conexão';
-require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/../app/views/partials/header.php';
 ?>
 
 <h1 class="h3 mb-4">Teste de conexão</h1>
@@ -40,4 +40,4 @@ require __DIR__ . '/../includes/header.php';
     <p class="text-muted">Nenhuma tabela ainda. Elas serão criadas pelas migrations em <code>database/migrations/</code>.</p>
 <?php endif; ?>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require __DIR__ . '/../app/views/partials/footer.php'; ?>

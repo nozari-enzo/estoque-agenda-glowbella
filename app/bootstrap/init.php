@@ -2,14 +2,14 @@
 /**
  * Arquivo de inicialização. TODA página em public/ deve começar incluindo ele:
  *
- *   require __DIR__ . '/../includes/init.php';      // páginas em public/
- *   require __DIR__ . '/../../includes/init.php';   // páginas em public/modulo/
+ *   require __DIR__ . '/../app/bootstrap/init.php';    // páginas em public/
+ *   require __DIR__ . '/../../app/bootstrap/init.php'; // páginas em public/modulo/
  *
  * Ele carrega a configuração, inicia a sessão, conecta ao banco ($pdo)
- * e disponibiliza as funções de includes/funcoes.php.
+ * e disponibiliza as funções de app/support/funcoes.php.
  */
 
-$arquivoConfig = __DIR__ . '/../config/config.php';
+$arquivoConfig = __DIR__ . '/../../config/config.php';
 
 if (!file_exists($arquivoConfig)) {
     http_response_code(500);
@@ -28,5 +28,5 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require __DIR__ . '/funcoes.php';
-require __DIR__ . '/conexao.php';
+require __DIR__ . '/../support/funcoes.php';
+require __DIR__ . '/../infrastructure/conexao.php';
