@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../includes/init.php';
+require __DIR__ . '/../app/bootstrap/init.php';
 
 /**
  * Conta os registros de uma tabela para mostrar nos atalhos.
@@ -52,7 +52,7 @@ $atalhos = [
 
 $titulo = 'Início';
 $menu = 'inicio';
-require __DIR__ . '/../includes/header.php';
+require __DIR__ . '/../app/views/partials/header.php';
 ?>
 
 <section class="boas-vindas card-glow">
@@ -87,4 +87,4 @@ require __DIR__ . '/../includes/header.php';
     <?php endforeach; ?>
 </div>
 
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+<?php require __DIR__ . '/../app/views/partials/footer.php'; ?>
