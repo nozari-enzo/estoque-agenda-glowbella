@@ -5,8 +5,8 @@
  * Antes de incluir, defina o título e qual item do menu fica destacado:
  *
  *   $titulo = 'Produtos';
- *   $menu = 'produtos';   // inicio, produtos, estoque, clientes ou agendamentos
- *   require __DIR__ . '/../../includes/header.php';
+ *   $menu = 'produtos';   // inicio, produtos, estoque, esterilizacao, clientes ou agendamentos
+ *   require __DIR__ . '/../../app/views/partials/header.php';
  */
 $tituloPagina = isset($titulo) ? $titulo . ' | GlowBella' : 'GlowBella';
 $menuAtivo = $menu ?? '';
@@ -18,6 +18,7 @@ $itensMenu = [
     'clientes'     => ['Clientes', 'bi-people', 'clientes/'],
     'produtos'     => ['Produtos', 'bi-gem', 'produtos/'],
     'estoque'      => ['Estoque', 'bi-box-seam', 'estoque/'],
+    'esterilizacao' => ['Esterilização', 'bi-shield-check', 'esterilizacao/'],
 ];
 ?>
 <!DOCTYPE html>

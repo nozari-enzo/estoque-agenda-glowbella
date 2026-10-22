@@ -1,9 +1,9 @@
 <?php
-require __DIR__ . '/../../includes/init.php';
+require __DIR__ . '/../../app/bootstrap/init.php';
 
 $titulo = 'Clientes';
 $menu = 'clientes';
-require __DIR__ . '/../../includes/header.php';
+require __DIR__ . '/../../app/views/partials/header.php';
 ?>
 
 <div class="cabecalho-pagina">
@@ -22,4 +22,4 @@ require __DIR__ . '/../../includes/header.php';
     </div>
 </div>
 
-<?php require __DIR__ . '/../../includes/footer.php'; ?>
+<?php require __DIR__ . '/../../app/views/partials/footer.php'; ?>
