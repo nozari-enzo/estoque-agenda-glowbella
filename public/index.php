@@ -9,7 +9,10 @@ require __DIR__ . '/../app/bootstrap/init.php';
 function contar(PDO $pdo, string $sql): ?int
 {
     try {
-        return (int) $pdo->query($sql)->fetchColumn();
+        $consulta = $pdo->prepare($sql);
+        $consulta->execute();
+
+        return (int) $consulta->fetchColumn();
     } catch (PDOException $erro) {
         return null;
     }
@@ -104,7 +107,7 @@ require __DIR__ . '/../app/views/partials/header.php';
         </div>
         <?php if ($produtosAbaixoMinimo !== null): ?>
             <span class="badge <?= $produtosAbaixoMinimo['total'] > 0 ? 'text-bg-warning' : 'text-bg-success' ?>">
-                <?= $produtosAbaixoMinimo['total'] ?> <?= $produtosAbaixoMinimo['total'] === 1 ? 'item abaixo do mínimo' : 'itens abaixo do mínimo' ?>
+                <?= e((string) $produtosAbaixoMinimo['total']) ?> <?= $produtosAbaixoMinimo['total'] === 1 ? 'item abaixo do mínimo' : 'itens abaixo do mínimo' ?>
             </span>
         <?php endif; ?>
     </div>
@@ -120,14 +123,14 @@ require __DIR__ . '/../app/views/partials/header.php';
                     <?php elseif ($produtosAbaixoMinimo['total'] === 0): ?>
                         <p>Nenhum produto ativo está abaixo do estoque mínimo cadastrado.</p>
                     <?php else: ?>
-                        <p><?= $produtosAbaixoMinimo['total'] ?> <?= $produtosAbaixoMinimo['total'] === 1 ? 'produto está' : 'produtos estão' ?> abaixo do mínimo:</p>
+                        <p><?= e((string) $produtosAbaixoMinimo['total']) ?> <?= $produtosAbaixoMinimo['total'] === 1 ? 'produto está' : 'produtos estão' ?> abaixo do mínimo:</p>
                         <ul class="alerta-home-lista">
                             <?php foreach ($produtosAbaixoMinimo['itens'] as $produto): ?>
                                 <li><strong><?= e($produto['nome']) ?></strong><span><?= e((string) $produto['quantidade']) ?> / mínimo <?= e((string) $produto['estoque_minimo']) ?></span></li>
                             <?php endforeach; ?>
                         </ul>
                         <?php if ($produtosAbaixoMinimo['total'] > count($produtosAbaixoMinimo['itens'])): ?>
-                            <p class="small mb-2">Exibindo <?= count($produtosAbaixoMinimo['itens']) ?> dos <?= $produtosAbaixoMinimo['total'] ?> itens.</p>
+                            <p class="small mb-2">Exibindo <?= e((string) count($produtosAbaixoMinimo['itens'])) ?> dos <?= e((string) $produtosAbaixoMinimo['total']) ?> itens.</p>
                         <?php endif; ?>
                     <?php endif; ?>
                     <a href="<?= url('estoque/') ?>" class="alerta-home-link">Ver estoque <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
@@ -159,7 +162,7 @@ require __DIR__ . '/../app/views/partials/header.php';
 
                 <?php if ($atalho['total'] !== null): ?>
                     <span class="card-atalho-total">
-                        <strong><?= $atalho['total'] ?></strong>
+                        <strong><?= e((string) $atalho['total']) ?></strong>
                         <?= e($atalho['total'] === 1 ? $atalho['rotulo'][0] : $atalho['rotulo'][1]) ?>
                     </span>
                 <?php endif; ?>
