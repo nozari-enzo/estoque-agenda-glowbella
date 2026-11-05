@@ -24,16 +24,16 @@ function listarProdutosAbaixoMinimo(PDO $pdo): ?array
     try {
         $consultaTotal = $pdo->prepare(
             'SELECT COUNT(*)
-             FROM produtos
-             WHERE ativo = 1 AND quantidade < estoque_minimo'
+             FROM produto
+             WHERE fg_status = 1 AND qtd_produto < qtd_estoque_minimo'
         );
         $consultaTotal->execute();
 
         $consultaItens = $pdo->prepare(
-            'SELECT nome, quantidade, estoque_minimo
-             FROM produtos
-             WHERE ativo = 1 AND quantidade < estoque_minimo
-             ORDER BY (estoque_minimo - quantidade) DESC, nome
+            'SELECT nm_produto AS nome, qtd_produto AS quantidade, qtd_estoque_minimo AS estoque_minimo
+             FROM produto
+             WHERE fg_status = 1 AND qtd_produto < qtd_estoque_minimo
+             ORDER BY (qtd_estoque_minimo - qtd_produto) DESC, nm_produto
              LIMIT 5'
         );
         $consultaItens->execute();
@@ -142,7 +142,7 @@ require __DIR__ . '/../app/views/partials/header.php';
                 <span class="alerta-home-icone" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
                 <div class="alerta-home-conteudo">
                     <h3>Esterilização e validade</h3>
-                    <p>O histórico e os prazos ainda são demonstrativos. A Home não consegue confirmar ciclos vencidos ou próximos do vencimento até essa informação ser integrada ao banco.</p>
+                    <p>O banco já tem tabelas para os ciclos, mas a tela ainda usa exemplos e a Home não consulta as datas de validade. Até a integração, confira os registros manualmente.</p>
                     <a href="<?= url('esterilizacao/') ?>" class="alerta-home-link">Abrir esterilização <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
                 </div>
             </article>
