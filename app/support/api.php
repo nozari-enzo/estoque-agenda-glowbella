@@ -287,3 +287,87 @@ function validar_opcao(array $dados, string $campo, array $opcoes, ?string $padr
 
     return $valor;
 }
+
+/**
+ * Data e hora. Aceita "AAAA-MM-DD HH:MM", "AAAA-MM-DD HH:MM:SS" e o formato
+ * do <input type="datetime-local"> ("AAAA-MM-DDTHH:MM").
+ * Devolve no formato do banco: "AAAA-MM-DD HH:MM:SS".
+ */
+function validar_data_hora(array $dados, string $campo, bool $obrigatorio, array &$erros, string $rotulo): ?string
+{
+    $valor = $dados[$campo] ?? null;
+
+    if ($valor === null || $valor === '') {
+        if ($obrigatorio) {
+            $erros[$campo] = "Informe $rotulo.";
+        }
+        return null;
+    }
+
+    if (is_string($valor)) {
+        $texto = str_replace('T', ' ', trim($valor));
+
+        foreach (['!Y-m-d H:i:s', '!Y-m-d H:i'] as $formato) {
+            $data = DateTime::createFromFormat($formato, $texto);
+            $erros_data = DateTime::getLastErrors();
+
+            if ($data && (!$erros_data || ($erros_data['warning_count'] === 0 && $erros_data['error_count'] === 0))) {
+                return $data->format('Y-m-d H:i:s');
+            }
+        }
+    }
+
+    $erros[$campo] = ucfirst($rotulo) . ' precisa ser uma data e hora válidas (AAAA-MM-DD HH:MM).';
+    return null;
+}
+
+/* ---------- Filtros da URL (GET) ---------- */
+
+/** Texto de um filtro da URL (ex.: ?busca=ana), sem espaços nas pontas. */
+function filtro_texto(string $nome): string
+{
+    return is_string($_GET[$nome] ?? null) ? trim($_GET[$nome]) : '';
+}
+
+/** Número inteiro positivo de um filtro da URL, ou null se ausente/inválido. */
+function filtro_inteiro(string $nome): ?int
+{
+    $valor = filter_var($_GET[$nome] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+    return $valor === false ? null : $valor;
+}
+
+/** Data (AAAA-MM-DD) de um filtro da URL. Responde 400 se vier num formato inválido. */
+function filtro_data(string $nome): ?string
+{
+    $valor = filtro_texto($nome);
+
+    if ($valor === '') {
+        return null;
+    }
+
+    $data = DateTime::createFromFormat('!Y-m-d', $valor);
+
+    if (!$data || $data->format('Y-m-d') !== $valor) {
+        responder_erro("O filtro $nome precisa ser uma data (AAAA-MM-DD).", 400);
+    }
+
+    return $valor;
+}
+
+/** Um valor de uma lista fixa vindo da URL, ou null se ausente/fora da lista. */
+function filtro_opcao(string $nome, array $opcoes): ?string
+{
+    $valor = filtro_texto($nome);
+
+    return in_array($valor, $opcoes, true) ? $valor : null;
+}
+
+/**
+ * Para PUT parcial: junta os campos editáveis do registro atual com o que veio
+ * no JSON. O que não vier mantém o valor atual.
+ */
+function mesclar_edicao(array $atual, array $entrada, array $camposEditaveis): array
+{
+    return array_merge(array_intersect_key($atual, array_flip($camposEditaveis)), $entrada);
+}

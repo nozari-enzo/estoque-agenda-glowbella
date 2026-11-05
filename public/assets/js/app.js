@@ -82,12 +82,14 @@ if (controleLote && controleValidade) {
  *   erro.message → mensagem para mostrar à pessoa
  *   erro.status  → código HTTP (ex.: 422)
  *   erro.campos  → erros por campo (ex.: { nm_produto: 'Informe o nome do produto.' })
+ *   erro.dados   → a resposta completa (ex.: erro.dados.conflitos na agenda)
  */
 class GlowApiErro extends Error {
-    constructor(mensagem, status, campos) {
+    constructor(mensagem, status, campos, dados) {
         super(mensagem);
         this.status = status;
         this.campos = campos || {};
+        this.dados = dados || {};
     }
 }
 
@@ -109,7 +111,7 @@ async function glowApi(caminho, opcoes = {}) {
     const dados = await resposta.json().catch(() => null);
 
     if (!resposta.ok) {
-        throw new GlowApiErro(dados?.erro || 'Não foi possível concluir a operação.', resposta.status, dados?.campos);
+        throw new GlowApiErro(dados?.erro || 'Não foi possível concluir a operação.', resposta.status, dados?.campos, dados);
     }
 
     return dados;

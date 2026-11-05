@@ -159,16 +159,32 @@ Use produtos como modelo:
    - um `case` por método HTTP; o que não for aceito cai em `metodo_nao_permitido()`.
 3. **Regra de negócio** que envolve mais de uma tabela ou uma conferência especial (ex.: movimentação de estoque, conflito de horário da agenda) vai em `app/services/<assunto>.php`, chamado pela API.
 4. **Teste** no console do navegador com `glowApi()`: listar, criar, editar, desativar, e pelo menos um caso inválido (deve voltar `422` com `campos`).
-5. **Documente** o recurso nesta página, no mesmo formato de produtos.
+5. **Documente** o recurso em `docs/api/<modulo>.md`, no mesmo formato de produtos, e marque na tabela abaixo.
 
-### APIs previstas
+### APIs do sistema
 
-| API | Tabela(s) | Situação |
+Cada API tem sua própria página de documentação:
+
+| API | Tabela(s) | Documentação |
 |---|---|---|
-| `auth.php` | `admin` | ✅ Pronta |
-| `produtos.php` | `produto` | ✅ Pronta |
-| `categorias.php` | `categoria` | A fazer |
-| `clientes.php` | `cliente` | A fazer |
-| `agenda.php` | `agenda` (+ conferir conflito de horário) | A fazer |
-| `movimentacoes.php` | `movimentacao` + atualiza `produto.qtd_produto` | A fazer |
-| `esterilizacoes.php` | `esterilizacao` + `esterilizacao_produto` | A fazer |
+| `auth.php` | `admin` | Nesta página |
+| `produtos.php` | `produto` | Nesta página |
+| `categorias.php` | `categoria` | [`docs/api/categorias.md`](api/categorias.md) |
+| `clientes.php` | `cliente` | [`docs/api/clientes.md`](api/clientes.md) |
+| `agenda.php` | `agenda` (+ conflito de horário) | [`docs/api/agenda.md`](api/agenda.md) |
+| `movimentacoes.php` | `movimentacao` + `produto.qtd_produto` | [`docs/api/movimentacoes.md`](api/movimentacoes.md) |
+| `esterilizacoes.php` | `esterilizacao` + `esterilizacao_produto` | [`docs/api/esterilizacoes.md`](api/esterilizacoes.md) |
+
+### Funções de apoio (`app/support/api.php`)
+
+| Função | Para que serve |
+|---|---|
+| `responder($dados, $status)` / `responder_erro($msg, $status, $campos)` | Enviar a resposta JSON |
+| `ler_json()` | Ler o corpo da requisição |
+| `id_da_url()` / `exigir_id()` | Ler o `?id=` da URL |
+| `exigir_login()` / `exigir_csrf()` | Proteger a API |
+| `metodo()` / `metodo_nao_permitido([...])` | Método HTTP |
+| `responder_erro_banco($erro)` | Traduzir erros do banco (repetido, em uso...) |
+| `validar_texto`, `validar_inteiro`, `validar_valor`, `validar_data`, `validar_data_hora`, `validar_opcao` | Validar campos do JSON |
+| `filtro_texto`, `filtro_inteiro`, `filtro_data`, `filtro_opcao` | Ler filtros da URL (`?busca=...`) |
+| `mesclar_edicao($atual, $entrada, $campos)` | `PUT` parcial: o que não vier mantém o valor atual |
