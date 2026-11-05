@@ -69,3 +69,50 @@ if (controleLote && controleValidade) {
     controleValidade.addEventListener('change', atualizarCamposLote);
     atualizarCamposLote();
 }
+
+/**
+ * Chama uma API do sistema (public/api/) e devolve o JSON da resposta.
+ * Já envia o token CSRF e trata o corpo como JSON.
+ *
+ *   const produtos = await glowApi('api/produtos.php?busca=argola');
+ *   const novo = await glowApi('api/produtos.php', { method: 'POST', body: { nm_produto: 'Argola', vl_produto: 59.9, cd_categoria: 1 } });
+ *   await glowApi('api/produtos.php?id=3', { method: 'DELETE' });
+ *
+ * Se a API responder com erro (4xx/5xx), lança um GlowApiErro com:
+ *   erro.message → mensagem para mostrar à pessoa
+ *   erro.status  → código HTTP (ex.: 422)
+ *   erro.campos  → erros por campo (ex.: { nm_produto: 'Informe o nome do produto.' })
+ *   erro.dados   → a resposta completa (ex.: erro.dados.conflitos na agenda)
+ */
+class GlowApiErro extends Error {
+    constructor(mensagem, status, campos, dados) {
+        super(mensagem);
+        this.status = status;
+        this.campos = campos || {};
+        this.dados = dados || {};
+    }
+}
+
+async function glowApi(caminho, opcoes = {}) {
+    const meta = (nome) => document.querySelector(`meta[name="${nome}"]`)?.content || '';
+    const metodo = (opcoes.method || 'GET').toUpperCase();
+
+    const resposta = await fetch(meta('base-url') + caminho.replace(/^\//, ''), {
+        method: metodo,
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            ...(opcoes.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+            ...(metodo !== 'GET' ? { 'X-CSRF-Token': meta('csrf-token') } : {}),
+        },
+        body: opcoes.body !== undefined ? JSON.stringify(opcoes.body) : undefined,
+    });
+
+    const dados = await resposta.json().catch(() => null);
+
+    if (!resposta.ok) {
+        throw new GlowApiErro(dados?.erro || 'Não foi possível concluir a operação.', resposta.status, dados?.campos, dados);
+    }
+
+    return dados;
+}

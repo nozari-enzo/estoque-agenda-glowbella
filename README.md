@@ -83,10 +83,13 @@ estoque-agenda-glowbella/
 ├── app/                    Código compartilhado do servidor (bloqueado no navegador)
 │   ├── bootstrap/init.php  Inicializa config, sessão, funções e conexão ($pdo)
 │   ├── infrastructure/     Integração com o MySQL (conexao.php)
-│   ├── support/            Funções comuns (funcoes.php)
+│   ├── repositories/       SQL de cada módulo (ex.: produtos/produtos.php)
+│   ├── services/           Regras de negócio (ex.: auth.php, login e sessão)
+│   ├── support/            Funções comuns (funcoes.php e api.php)
 │   └── views/partials/     Estrutura HTML comum (header.php e footer.php)
 ├── public/                 Páginas acessadas pelo navegador
 │   ├── index.php           Home
+│   ├── api/                APIs em JSON usadas pelas telas (auth.php, produtos.php...)
 │   ├── produtos/           Catálogo e protótipo de cadastro
 │   ├── clientes/
 │   ├── estoque/
@@ -121,6 +124,10 @@ Para as próximas funcionalidades, use esta divisão quando ela fizer sentido:
 - `app/controllers/<modulo>/`: fluxo da tela e validação dos dados recebidos.
 - `app/repositories/<modulo>/`: consultas e gravações no MySQL usando PDO.
 - `app/views/<modulo>/`: HTML da tela; layouts comuns ficam em `app/views/partials/`.
+- `public/api/<modulo>.php`: API em JSON do módulo, chamada pelas telas com `glowApi()`.
+- `app/services/`: regras de negócio que envolvem mais de uma tabela (ex.: estoque, conflito de agenda).
+
+As APIs, a função `glowApi()` e o passo a passo para criar uma API nova estão em [`docs/api.md`](docs/api.md).
 
 Não crie arquivos vazios só para preencher essas pastas. Ao começar uma funcionalidade, adicione apenas as partes necessárias e mantenha o mesmo nome de módulo nas camadas. Assim, por exemplo, tudo relacionado a produtos pode ser encontrado procurando por `produtos` nesses caminhos.
 
