@@ -4,7 +4,7 @@
  *
  * Use SEMPRE prepared statements (nunca coloque variáveis direto no SQL):
  *
- *   $stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');
+ *   $stmt = $pdo->prepare('SELECT * FROM produto WHERE cd_produto = ?');
  *   $stmt->execute([$id]);
  *   $produto = $stmt->fetch();
  */
