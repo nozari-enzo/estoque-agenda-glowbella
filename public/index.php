@@ -21,7 +21,7 @@ $atalhos = [
         'descricao' => 'Marque e acompanhe os horários de atendimento.',
         'icone'     => 'bi-calendar-heart',
         'link'      => 'agendamentos/',
-        'total'     => contar($pdo, "SELECT COUNT(*) FROM agendamentos WHERE DATE(inicio) = CURDATE() AND status <> 'cancelado'"),
+        'total'     => contar($pdo, "SELECT COUNT(*) FROM agenda WHERE DATE(dt_agendamento) = CURDATE() AND fg_status <> 'cancelado'"),
         'rotulo'    => ['agendamento hoje', 'agendamentos hoje'],
     ],
     [
@@ -29,7 +29,7 @@ $atalhos = [
         'descricao' => 'Cadastro e contato das clientes.',
         'icone'     => 'bi-people',
         'link'      => 'clientes/',
-        'total'     => contar($pdo, 'SELECT COUNT(*) FROM clientes'),
+        'total'     => contar($pdo, 'SELECT COUNT(*) FROM cliente WHERE fg_status = 1'),
         'rotulo'    => ['cliente cadastrada', 'clientes cadastradas'],
     ],
     [
@@ -37,7 +37,7 @@ $atalhos = [
         'descricao' => 'Catálogo de brincos, piercings e acessórios.',
         'icone'     => 'bi-gem',
         'link'      => 'produtos/',
-        'total'     => contar($pdo, 'SELECT COUNT(*) FROM produtos WHERE ativo = 1'),
+        'total'     => contar($pdo, 'SELECT COUNT(*) FROM produto WHERE fg_status = 1'),
         'rotulo'    => ['produto ativo', 'produtos ativos'],
     ],
     [
@@ -45,7 +45,7 @@ $atalhos = [
         'descricao' => 'Entradas, saídas e produtos para repor.',
         'icone'     => 'bi-box-seam',
         'link'      => 'estoque/',
-        'total'     => contar($pdo, 'SELECT COUNT(*) FROM produtos WHERE ativo = 1 AND quantidade < estoque_minimo'),
+        'total'     => contar($pdo, 'SELECT COUNT(*) FROM produto WHERE fg_status = 1 AND qtd_produto < qtd_estoque_minimo'),
         'rotulo'    => ['produto para repor', 'produtos para repor'],
     ],
 ];

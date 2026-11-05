@@ -51,6 +51,7 @@ Isso cria o banco `glowbella`, todas as tabelas e os dados de exemplo.
 
 - **Sempre que puxar a `dev`**, rode de novo `C:\xampp\php\php.exe database\migrar.php`. Ele só executa as migrations novas.
 - Para **apagar tudo e recriar do zero**: `C:\xampp\php\php.exe database\migrar.php --reset --seed`
+- Se aparecer **"Este banco foi criado com migrations que não existem mais"**, a estrutura do banco mudou (ex.: refatoração do banco). Recrie com o comando `--reset --seed` acima. Isso apaga os dados locais de teste.
 - **Login de teste** (criado pelo seed): `admin@glowbella.com` / `glowbella123`
 
 <details>
@@ -136,7 +137,7 @@ Para uma página realmente simples, não é necessário criar todas as camadas. 
 
 ## Regras da equipe
 
-1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `008_alteracao_exemplo.sql`, após a migration atual `007`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: crie a próxima migration numerada.
+1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `009_alteracao_exemplo.sql`, após a migration atual `008`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: crie a próxima migration numerada.
 2. **Sempre PDO com prepared statements.** Nunca coloque variáveis direto no SQL (evita SQL Injection).
    ```php
    $stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');

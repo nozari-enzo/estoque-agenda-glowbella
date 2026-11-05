@@ -69,6 +69,16 @@ $pdo->exec(
 
 $executadas = $pdo->query('SELECT arquivo FROM migracoes')->fetchAll(PDO::FETCH_COLUMN);
 
+// Migrations registradas no banco que não existem mais na pasta indicam um banco
+// criado com uma estrutura antiga (ex.: antes da refatoração do banco).
+$existentes = array_map('basename', glob(__DIR__ . '/migrations/*.sql'));
+$antigas = array_diff($executadas, $existentes);
+if ($antigas && !$resetar) {
+    fwrite(STDERR, "Este banco foi criado com migrations que não existem mais:\n  - " . implode("\n  - ", $antigas) . "\n");
+    fwrite(STDERR, "A estrutura do banco mudou. Recrie o banco com: php database/migrar.php --reset --seed\n");
+    exit(1);
+}
+
 $arquivos = glob(__DIR__ . '/migrations/*.sql');
 sort($arquivos);
 
@@ -98,7 +108,7 @@ foreach ($arquivos as $caminho) {
 echo $novas ? "$novas migration(s) executada(s).\n" : "Nenhuma migration pendente. Banco atualizado.\n";
 
 if ($rodarSeed) {
-    $temDados = (int) $pdo->query('SELECT COUNT(*) FROM usuarios')->fetchColumn();
+    $temDados = (int) $pdo->query('SELECT COUNT(*) FROM admin')->fetchColumn();
     if ($temDados) {
         echo "Seed ignorado: o banco já tem dados. Use --reset --seed para recriar do zero.\n";
     } else {
