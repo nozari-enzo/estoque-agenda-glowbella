@@ -29,6 +29,10 @@ $itensMenu = [
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($tituloPagina) ?></title>
 
+    <!-- Usados pela função glowApi() de public/assets/js/app.js -->
+    <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+    <meta name="base-url" content="<?= e(url()) ?>">
+
     <!-- Fontes: Playfair Display (títulos) e Inter (textos) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
