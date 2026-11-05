@@ -92,6 +92,7 @@ estoque-agenda-glowbella/
 │   ├── estoque/
 │   ├── esterilizacao/      Protótipo de histórico de ciclos
 │   ├── agendamentos/
+│   ├── financeiro/         Protótipo de receitas, joias e gastos
 │   ├── assets/             CSS, JavaScript e imagens
 │   └── uploads/            Fotos enviadas pelo sistema (não vão pro Git)
 ├── database/
@@ -112,7 +113,7 @@ estoque-agenda-glowbella/
 
 As páginas continuam acessíveis por `public/`. A pasta `app/` organiza o código usado por elas e não deve conter arquivos acessados diretamente pelo navegador. Ao implementar uma funcionalidade com regras ou consultas maiores, mantenha a tela em `public/<modulo>/` e separe a lógica do HTML dentro de `app/` para que a equipe encontre cada responsabilidade com facilidade.
 
-As telas de produtos, estoque e esterilização incluem protótipos visuais com dados demonstrativos. Os filtros e a exibição dos campos de lote/validade rodam somente no navegador; os botões de cadastro, movimentação e registro ainda não persistem dados. A integração deve ser feita depois que as regras e tabelas do back-end forem definidas.
+As telas de produtos, estoque, esterilização e financeiro incluem protótipos visuais com dados demonstrativos. Os filtros e a exibição dos campos de lote/validade rodam somente no navegador; as telas ainda não persistem dados. O Financeiro demonstra a separação entre valor do procedimento, venda da joia e compras, com referências à Agenda. A integração deve ser feita depois que as regras e tabelas do back-end forem definidas.
 
 Para as próximas funcionalidades, use esta divisão quando ela fizer sentido:
 
@@ -149,6 +150,18 @@ Para uma página realmente simples, não é necessário criar todas as camadas. 
 6. **Header e footer sempre via `require`**, nunca copiados.
 7. **Links sempre com `url()`**: `<a href="<?= url('produtos/') ?>">`.
 8. **Visual padronizado:** antes de criar uma tela, abra o **Guia de componentes** (http://localhost/estoque-agenda-glowbella/public/componentes.php) e copie o HTML de lá. Cores e estilos novos vão em `public/assets/css/style.css`, nunca em `style=""` dentro do HTML.
+
+## Conferência visual
+
+As páginas devem ser abertas no XAMPP e conferidas em desktop e celular. Para gerar capturas locais e verificar se o Bootstrap carregou, se houve erro JavaScript ou se apareceu rolagem horizontal:
+
+1. Instale o Node.js LTS na máquina de desenvolvimento. Ele é usado apenas pelas ferramentas de conferência; o sistema continua rodando em PHP no XAMPP.
+2. Na primeira configuração do repositório, execute `npm.cmd ci` e `npx.cmd playwright install chromium`.
+3. Inicie o Apache no XAMPP e rode `npm.cmd run visual:esterilizacao` na raiz do projeto.
+
+As imagens são salvas em `artifacts/visual/`, pasta local ignorada pelo Git. Para conferir outra tela, use `npm.cmd run visual -- financeiro/`. A URL base padrão é `http://localhost/glowbella`; se ela for diferente, defina `BASE_URL` antes de rodar o comando. A página usa arquivos do Bootstrap e fontes por CDN, então a primeira captura precisa de acesso à internet.
+
+Para capturar todas as telas alteradas nesta etapa, use `npm.cmd run visual:all`.
 
 ---
 

@@ -19,6 +19,7 @@ $itensMenu = [
     'produtos'     => ['Produtos', 'bi-gem', 'produtos/'],
     'estoque'      => ['Estoque', 'bi-box-seam', 'estoque/'],
     'esterilizacao' => ['Esterilização', 'bi-shield-check', 'esterilizacao/'],
+    'financeiro'   => ['Financeiro', 'bi-cash-coin', 'financeiro/'],
 ];
 ?>
 <!DOCTYPE html>

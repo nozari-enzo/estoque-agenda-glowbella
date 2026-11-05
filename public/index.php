@@ -9,7 +9,39 @@ require __DIR__ . '/../app/bootstrap/init.php';
 function contar(PDO $pdo, string $sql): ?int
 {
     try {
-        return (int) $pdo->query($sql)->fetchColumn();
+        $consulta = $pdo->prepare($sql);
+        $consulta->execute();
+
+        return (int) $consulta->fetchColumn();
+    } catch (PDOException $erro) {
+        return null;
+    }
+}
+
+/** Busca o total e uma lista curta; null indica que o banco/tabela não está disponível. */
+function listarProdutosAbaixoMinimo(PDO $pdo): ?array
+{
+    try {
+        $consultaTotal = $pdo->prepare(
+            'SELECT COUNT(*)
+             FROM produto
+             WHERE fg_status = 1 AND qtd_produto < qtd_estoque_minimo'
+        );
+        $consultaTotal->execute();
+
+        $consultaItens = $pdo->prepare(
+            'SELECT nm_produto AS nome, qtd_produto AS quantidade, qtd_estoque_minimo AS estoque_minimo
+             FROM produto
+             WHERE fg_status = 1 AND qtd_produto < qtd_estoque_minimo
+             ORDER BY (qtd_estoque_minimo - qtd_produto) DESC, nm_produto
+             LIMIT 5'
+        );
+        $consultaItens->execute();
+
+        return [
+            'total' => (int) $consultaTotal->fetchColumn(),
+            'itens' => $consultaItens->fetchAll(PDO::FETCH_ASSOC),
+        ];
     } catch (PDOException $erro) {
         return null;
     }
@@ -50,6 +82,8 @@ $atalhos = [
     ],
 ];
 
+$produtosAbaixoMinimo = listarProdutosAbaixoMinimo($pdo);
+
 $titulo = 'Início';
 $menu = 'inicio';
 require __DIR__ . '/../app/views/partials/header.php';
@@ -64,6 +98,58 @@ require __DIR__ . '/../app/views/partials/header.php';
     <i class="bi bi-gem boas-vindas-icone" aria-hidden="true"></i>
 </section>
 
+<section class="alertas-home card-glow" aria-labelledby="titulo-alertas-home">
+    <div class="alertas-home-cabecalho">
+        <div>
+            <p class="alertas-home-sobretitulo">Acompanhamento</p>
+            <h2 id="titulo-alertas-home">Avisos importantes</h2>
+            <p class="text-muted mb-0">Pontos que podem precisar de atenção antes dos próximos atendimentos.</p>
+        </div>
+        <?php if ($produtosAbaixoMinimo !== null): ?>
+            <span class="badge <?= $produtosAbaixoMinimo['total'] > 0 ? 'text-bg-warning' : 'text-bg-success' ?>">
+                <?= e((string) $produtosAbaixoMinimo['total']) ?> <?= $produtosAbaixoMinimo['total'] === 1 ? 'item abaixo do mínimo' : 'itens abaixo do mínimo' ?>
+            </span>
+        <?php endif; ?>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-lg-7">
+            <article class="alerta-home-item <?= $produtosAbaixoMinimo === null ? 'alerta-home-indisponivel' : ($produtosAbaixoMinimo['total'] > 0 ? 'alerta-home-atencao' : 'alerta-home-ok') ?>">
+                <span class="alerta-home-icone" aria-hidden="true"><i class="bi <?= $produtosAbaixoMinimo === null ? 'bi-database-exclamation' : ($produtosAbaixoMinimo['total'] > 0 ? 'bi-exclamation-triangle' : 'bi-check-circle') ?>"></i></span>
+                <div class="alerta-home-conteudo">
+                    <h3>Reposição de estoque</h3>
+                    <?php if ($produtosAbaixoMinimo === null): ?>
+                        <p>Não foi possível consultar o estoque. Confira a conexão e se as migrations foram executadas.</p>
+                    <?php elseif ($produtosAbaixoMinimo['total'] === 0): ?>
+                        <p>Nenhum produto ativo está abaixo do estoque mínimo cadastrado.</p>
+                    <?php else: ?>
+                        <p><?= e((string) $produtosAbaixoMinimo['total']) ?> <?= $produtosAbaixoMinimo['total'] === 1 ? 'produto está' : 'produtos estão' ?> abaixo do mínimo:</p>
+                        <ul class="alerta-home-lista">
+                            <?php foreach ($produtosAbaixoMinimo['itens'] as $produto): ?>
+                                <li><strong><?= e($produto['nome']) ?></strong><span><?= e((string) $produto['quantidade']) ?> / mínimo <?= e((string) $produto['estoque_minimo']) ?></span></li>
+                            <?php endforeach; ?>
+                        </ul>
+                        <?php if ($produtosAbaixoMinimo['total'] > count($produtosAbaixoMinimo['itens'])): ?>
+                            <p class="small mb-2">Exibindo <?= e((string) count($produtosAbaixoMinimo['itens'])) ?> dos <?= e((string) $produtosAbaixoMinimo['total']) ?> itens.</p>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    <a href="<?= url('estoque/') ?>" class="alerta-home-link">Ver estoque <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-lg-5">
+            <article class="alerta-home-item alerta-home-prototipo">
+                <span class="alerta-home-icone" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+                <div class="alerta-home-conteudo">
+                    <h3>Esterilização e validade</h3>
+                    <p>O banco já tem tabelas para os ciclos, mas a tela ainda usa exemplos e a Home não consulta as datas de validade. Até a integração, confira os registros manualmente.</p>
+                    <a href="<?= url('esterilizacao/') ?>" class="alerta-home-link">Abrir esterilização <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
 <h2 class="h5 mb-3">Acesso rápido</h2>
 
 <div class="row g-3 g-lg-4">
@@ -76,7 +162,7 @@ require __DIR__ . '/../app/views/partials/header.php';
 
                 <?php if ($atalho['total'] !== null): ?>
                     <span class="card-atalho-total">
-                        <strong><?= $atalho['total'] ?></strong>
+                        <strong><?= e((string) $atalho['total']) ?></strong>
                         <?= e($atalho['total'] === 1 ? $atalho['rotulo'][0] : $atalho['rotulo'][1]) ?>
                     </span>
                 <?php endif; ?>

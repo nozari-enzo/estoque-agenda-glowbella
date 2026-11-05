@@ -44,69 +44,84 @@ $ciclosDemo = [
 </section>
 
 <div class="row g-4 align-items-start">
-    <div class="col-12 col-xl-4">
+    <div class="col-12">
         <section class="card-glow p-3 p-lg-4" aria-labelledby="titulo-novo-ciclo">
-            <h2 class="h4 mb-1" id="titulo-novo-ciclo">Novo registro</h2>
-            <p class="small text-muted mb-3">Campos ilustrativos para documentar um processamento.</p>
+            <div class="mb-4">
+                <h2 class="h4 mb-1" id="titulo-novo-ciclo">Novo registro</h2>
+                <p class="text-muted mb-0">Dados demonstrativos do processamento e dos pacotes esterilizados.</p>
+            </div>
 
-            <div class="row g-3">
-                <div class="col-12 col-sm-6 col-xl-12">
-                    <label class="form-label" for="ciclo-codigo">Identificação do ciclo</label>
-                    <input class="form-control" id="ciclo-codigo" type="text" placeholder="Ex.: C-027">
+            <div class="ciclo-formulario-grupo mb-4">
+                <div class="mb-3">
+                    <h3 class="h6 fw-semibold mb-1">Dados do processamento</h3>
+                    <p class="small text-muted mb-0">Identifique o ciclo, a data e o método utilizado.</p>
                 </div>
-                <div class="col-12 col-sm-6 col-xl-12">
-                    <label class="form-label" for="ciclo-data">Data do processamento</label>
-                    <input class="form-control" id="ciclo-data" type="date">
-                </div>
-                <div class="col-12 col-sm-6 col-xl-12">
-                    <label class="form-label" for="ciclo-metodo">Método</label>
-                    <select class="form-select" id="ciclo-metodo">
-                        <option value="">Selecione...</option>
-                        <option>Autoclave</option>
-                        <option>Outro método</option>
-                    </select>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-12">
-                    <label class="form-label" for="ciclo-responsavel">Responsável</label>
-                    <input class="form-control" id="ciclo-responsavel" type="text" placeholder="Nome da pessoa responsável">
-                </div>
-                <div class="col-12">
-                    <label class="form-label" for="ciclo-pacotes">Pacotes ou identificadores processados</label>
-                    <textarea class="form-control" id="ciclo-pacotes" rows="3" placeholder="Informe os pacotes deste ciclo"></textarea>
-                    <div class="form-text">A forma de identificar cada pacote será definida com o modelo do banco.</div>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-12">
-                    <label class="form-label" for="indicador-quimico">Indicador químico</label>
-                    <select class="form-select" id="indicador-quimico">
-                        <option value="">Selecione o resultado...</option>
-                        <option>Aprovado</option>
-                        <option>Reprovado</option>
-                    </select>
-                </div>
-                <div class="col-12 col-sm-6 col-xl-12">
-                    <label class="form-label" for="indicador-biologico">Indicador biológico</label>
-                    <select class="form-select" id="indicador-biologico">
-                        <option value="">Selecione o resultado...</option>
-                        <option>Aprovado</option>
-                        <option>Reprovado</option>
-                        <option>Não aplicável / pendente de definição</option>
-                    </select>
-                </div>
-                <div class="col-12">
-                    <label class="form-label" for="ciclo-validade">Validade atribuída ao pacote</label>
-                    <input class="form-control" id="ciclo-validade" type="date">
-                    <div class="form-text">O sistema não calcula esse prazo neste protótipo.</div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="ciclo-codigo">Identificação do ciclo</label>
+                        <input class="form-control" id="ciclo-codigo" type="text" placeholder="Ex.: C-027">
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="ciclo-data">Data do processamento</label>
+                        <input class="form-control" id="ciclo-data" type="date">
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <label class="form-label" for="ciclo-metodo">Método</label>
+                        <select class="form-select" id="ciclo-metodo">
+                            <option value="">Selecione...</option>
+                            <option>Autoclave</option>
+                            <option>Outro método</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
-                <button class="btn btn-outline-primary" type="button">Adicionar pacote</button>
-                <button class="btn btn-primary" type="button"><i class="bi bi-check-lg" aria-hidden="true"></i> Salvar ciclo</button>
+            <div class="ciclo-formulario-grupo">
+                <div class="mb-3">
+                    <h3 class="h6 fw-semibold mb-1">Pacotes e controles</h3>
+                    <p class="small text-muted mb-0">Registre os identificadores e os resultados dos indicadores do ciclo.</p>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12 col-lg-8">
+                        <label class="form-label" for="ciclo-pacotes">Pacotes ou identificadores processados</label>
+                        <textarea class="form-control" id="ciclo-pacotes" rows="2" placeholder="Ex.: P-101, P-102, P-103"></textarea>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <label class="form-label" for="ciclo-validade">Validade atribuída aos pacotes</label>
+                        <input class="form-control" id="ciclo-validade" type="date" aria-describedby="ciclo-validade-ajuda">
+                        <div class="form-text" id="ciclo-validade-ajuda">O prazo não é calculado neste protótipo.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="indicador-quimico">Indicador químico</label>
+                        <select class="form-select" id="indicador-quimico">
+                            <option value="">Selecione o resultado...</option>
+                            <option>Aprovado</option>
+                            <option>Reprovado</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label" for="indicador-biologico">Indicador biológico</label>
+                        <select class="form-select" id="indicador-biologico">
+                            <option value="">Selecione o resultado...</option>
+                            <option>Aprovado</option>
+                            <option>Reprovado</option>
+                            <option>Não aplicável / pendente de definição</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mt-4 pt-3 border-top">
+                <p class="small text-muted mb-0"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>Protótipo visual; os dados ainda não são salvos.</p>
+                <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
+                    <button class="btn btn-outline-primary" type="button">Adicionar pacote</button>
+                    <button class="btn btn-primary" type="button"><i class="bi bi-check-lg" aria-hidden="true"></i> Salvar ciclo</button>
+                </div>
             </div>
         </section>
     </div>
 
-    <div class="col-12 col-xl-8">
+    <div class="col-12">
         <section class="card-glow p-3 p-lg-4" aria-labelledby="titulo-historico-ciclos">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
                 <div><h2 class="h4 mb-1" id="titulo-historico-ciclos">Histórico</h2><p class="text-muted mb-0">Cada linha mantém os dados demonstrativos de um processamento.</p></div>
