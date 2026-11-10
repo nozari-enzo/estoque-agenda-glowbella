@@ -51,6 +51,8 @@ Formato de erro:
 
 ## Usando nas telas: `glowApi()`
 
+> Para montar uma tela inteira (lista, formulário, erros embaixo dos campos), siga o padrão de [`docs/front.md`](front.md), que usa o `glowFormulario()`.
+
 Disponível em todas as páginas (`public/assets/js/app.js`):
 
 ```javascript
