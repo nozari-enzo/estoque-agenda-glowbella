@@ -7,7 +7,7 @@
  * Escapa um texto para exibir no HTML com segurança (evita XSS).
  * Use SEMPRE que for mostrar dados vindos do usuário ou do banco:
  *
- *   <?= e($produto['nome']) ?>
+ *   <?= e($produto['nm_produto']) ?>
  */
 function e(?string $texto): string
 {

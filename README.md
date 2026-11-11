@@ -146,13 +146,13 @@ Não crie arquivos vazios só para preencher essas pastas. Ao começar uma funci
 ## Regras da equipe
 
 1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `009_alteracao_exemplo.sql`, após a migration atual `008`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: crie a próxima migration numerada.
-2. **Sempre PDO com prepared statements.** Nunca coloque variáveis direto no SQL (evita SQL Injection).
+2. **SQL só em `app/` (repositories e services), sempre com PDO e prepared statements.** Nunca nas páginas, e nunca com variáveis direto no SQL (evita SQL Injection). As páginas chamam as funções de `app/repositories/<modulo>/`.
    ```php
-   $stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');
-   $stmt->execute([$id]);
+   $stmt = $pdo->prepare('SELECT * FROM produto WHERE cd_produto = ?');
+   $stmt->execute([$cdProduto]);
    ```
-3. **Sempre `e()` ao exibir dados** do usuário ou do banco (evita XSS): `<?= e($cliente['nome']) ?>`
-4. **Todo formulário POST tem `<?= csrf_campo() ?>`** e o processamento começa com `csrf_validar();`.
+3. **Sempre `e()` ao exibir dados** do usuário ou do banco (evita XSS): `<?= e($cliente['nm_cliente']) ?>`. No JavaScript, use `textContent`, nunca `innerHTML` com dados da API.
+4. **Gravar sempre pela API.** Formulários de criar, editar e desativar usam `glowFormulario()` / `glowApi()`, que já enviam o token CSRF (veja [`docs/front.md`](docs/front.md)). Se um formulário precisar fazer POST para a própria página, ele tem `<?= csrf_campo() ?>` e o processamento começa com `csrf_validar();`.
 5. **Senhas** só com `password_hash()` / `password_verify()`.
 6. **Header e footer sempre via `require`**, nunca copiados.
 7. **Links sempre com `url()`**: `<a href="<?= url('produtos/') ?>">`.
