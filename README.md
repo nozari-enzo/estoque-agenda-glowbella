@@ -116,30 +116,30 @@ estoque-agenda-glowbella/
 
 As páginas continuam acessíveis por `public/`. A pasta `app/` organiza o código usado por elas e não deve conter arquivos acessados diretamente pelo navegador. Ao implementar uma funcionalidade com regras ou consultas maiores, mantenha a tela em `public/<modulo>/` e separe a lógica do HTML dentro de `app/` para que a equipe encontre cada responsabilidade com facilidade.
 
-As telas de produtos, estoque, esterilização e financeiro incluem protótipos visuais com dados demonstrativos. Os filtros e a exibição dos campos de lote/validade rodam somente no navegador; as telas ainda não persistem dados. O Financeiro demonstra a separação entre valor do procedimento, venda da joia e compras, com referências à Agenda. A integração deve ser feita depois que as regras e tabelas do back-end forem definidas.
+As telas de produtos, estoque, esterilização e financeiro incluem protótipos visuais com dados demonstrativos. Os filtros e a exibição dos campos de lote/validade rodam somente no navegador; as telas ainda não persistem dados. O Financeiro demonstra a separação entre valor do procedimento, venda da joia e compras, com referências à Agenda. Com as APIs prontas, a integração de cada tela segue o guia [`docs/front.md`](docs/front.md).
 
-Para as próximas funcionalidades, use esta divisão quando ela fizer sentido:
+Cada módulo usa o mesmo nome em todas as camadas:
 
-- `public/<modulo>/`: entrada da URL e resposta HTTP.
-- `app/controllers/<modulo>/`: fluxo da tela e validação dos dados recebidos.
-- `app/repositories/<modulo>/`: consultas e gravações no MySQL usando PDO.
-- `app/views/<modulo>/`: HTML da tela; layouts comuns ficam em `app/views/partials/`.
+- `public/<modulo>/`: as páginas (lista, criar, editar).
+- `public/assets/js/<modulo>.js`: o JavaScript da tela (formulários e botões que chamam a API).
 - `public/api/<modulo>.php`: API em JSON do módulo, chamada pelas telas com `glowApi()`.
+- `app/repositories/<modulo>/`: consultas e gravações no MySQL usando PDO.
 - `app/services/`: regras de negócio que envolvem mais de uma tabela (ex.: estoque, conflito de agenda).
+- `app/views/partials/`: header e footer comuns.
 
 As APIs, a função `glowApi()` e o passo a passo para criar uma API nova estão em [`docs/api.md`](docs/api.md).
+O padrão para fazer as telas (lista em PHP, salvar pela API) está em [`docs/front.md`](docs/front.md).
 
 Não crie arquivos vazios só para preencher essas pastas. Ao começar uma funcionalidade, adicione apenas as partes necessárias e mantenha o mesmo nome de módulo nas camadas. Assim, por exemplo, tudo relacionado a produtos pode ser encontrado procurando por `produtos` nesses caminhos.
 
 ### Fluxo de uma tela nova
 
-1. A URL e o ponto de entrada ficam em `public/<modulo>/`.
-2. O ponto de entrada carrega `app/bootstrap/init.php`.
-3. O controller do módulo valida a requisição e coordena a ação; o repository concentra o SQL e usa PDO.
-4. A view do módulo monta o HTML. Ela inclui os layouts compartilhados de `app/views/partials/`.
-5. CSS, JavaScript e imagens usados pelo navegador ficam em `public/assets/`.
+**Guia completo, com exemplo testado: [`docs/front.md`](docs/front.md).** Resumo:
 
-Para uma página realmente simples, não é necessário criar todas as camadas. Em telas com cadastro, edição ou regras de negócio, siga essa separação para que consultas, validações e HTML não se acumulem no mesmo arquivo.
+1. A página fica em `public/<modulo>/` e começa com `require` do `app/bootstrap/init.php` e do repository do módulo.
+2. **Lista:** a página chama o repository (`listar_clientes($pdo)`) e mostra os dados com `e()`. Nada de SQL na página.
+3. **Criar, editar, desativar:** o formulário chama a API (`public/api/<modulo>.php`) com `glowFormulario()` ou `glowApi()`. A API valida e aplica as regras.
+4. O JavaScript da tela fica em `public/assets/js/<modulo>.js`, e o CSS em `public/assets/css/style.css`.
 
 ---
 
