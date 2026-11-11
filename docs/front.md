@@ -32,17 +32,18 @@ Salvar o formulário: clientes.js ──glowFormulario()──▶ api/clientes.p
 public/clientes/
 ├── index.php        Lista (PHP + repository)
 ├── criar.php        Página "Nova cliente"
-├── editar.php       Página "Editar cliente" (carrega os dados pelo repository)
-└── formulario.php   O <form>, usado pelo criar.php e pelo editar.php
+└── editar.php       Página "Editar cliente" (carrega os dados pelo repository)
+app/views/clientes/
+└── formulario.php   O <form>, usado pelo criar.php e pelo editar.php (em app/, não abre direto pelo navegador)
 public/assets/js/
-└── clientes.js      Liga o formulário e o botão de desativar à API
+└── clientes.js      Liga o formulário e os botões de desativar/reativar à API
 ```
 
 ---
 
 ## Exemplo completo: clientes
 
-Este exemplo foi testado no navegador (cadastro, erros, edição, telefone repetido, desativação). Para uma tela nova, copie e troque os campos.
+A tela de **Clientes** (`public/clientes/`) é a tela de referência: já está ligada às APIs e foi testada no navegador (cadastro, erros embaixo dos campos, telefone repetido, edição, desativar, reativar, celular). Para uma tela nova, copie os arquivos dela e troque os campos.
 
 ### 1. Lista: `public/clientes/index.php`
 
@@ -51,8 +52,9 @@ Este exemplo foi testado no navegador (cadastro, erros, edição, telefone repet
 require __DIR__ . '/../../app/bootstrap/init.php';
 require __DIR__ . '/../../app/repositories/clientes/clientes.php';
 
-// 1. Os dados vêm do repository, a mesma função que a api/clientes.php usa
-$clientes = listar_clientes($pdo);
+// ?status=inativas mostra as clientes desativadas (para reativar)
+$verInativas = ($_GET['status'] ?? '') === 'inativas';
+$clientes = listar_clientes($pdo, ['fg_status' => $verInativas ? '0' : '1']);
 
 $titulo = 'Clientes';
 $menu = 'clientes';
@@ -73,41 +75,77 @@ require __DIR__ . '/../../app/views/partials/header.php';
     <div class="alert alert-success" role="alert">Cliente salva com sucesso!</div>
 <?php endif; ?>
 
-<section class="card-glow p-3 p-lg-4" data-lista-filtro data-busca="busca-clientes">
-    <label class="visually-hidden" for="busca-clientes">Buscar cliente</label>
-    <input class="form-control mb-3" id="busca-clientes" type="search" placeholder="Buscar por nome ou telefone">
-    <p class="small text-muted" aria-live="polite" data-contador-resultados></p>
-
-    <div class="table-responsive">
-        <table class="table table-hover tabela-glow mb-0">
-            <thead>
-                <tr>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Telefone</th>
-                    <th scope="col" class="acoes">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($clientes as $cliente): ?>
-                    <!-- 2. Sempre e() ao mostrar dados do banco -->
-                    <tr data-item-lista>
-                        <td><?= e($cliente['nm_cliente']) ?></td>
-                        <td><?= e($cliente['nu_telefone']) ?></td>
-                        <td class="acoes">
-                            <a href="<?= url('clientes/editar.php?id=' . $cliente['cd_cliente']) ?>" class="btn btn-sm btn-outline-primary">Editar</a>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-desativar="<?= $cliente['cd_cliente'] ?>">Desativar</button>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-                <tr data-sem-resultados class="d-none">
-                    <td colspan="3" class="text-center text-muted py-4">Nenhuma cliente encontrada.</td>
-                </tr>
-            </tbody>
-        </table>
+<section class="card-glow p-3 p-lg-4" aria-labelledby="titulo-lista-clientes" data-lista-filtro data-busca="busca-clientes">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <h2 class="h4 mb-1" id="titulo-lista-clientes"><?= $verInativas ? 'Clientes desativadas' : 'Clientes ativas' ?></h2>
+            <p class="text-muted mb-0">Pesquise pelo nome ou pelo telefone.</p>
+        </div>
+        <div class="btn-group" role="group" aria-label="Mostrar clientes">
+            <a href="<?= url('clientes/') ?>" class="btn btn-sm <?= $verInativas ? 'btn-outline-primary' : 'btn-primary' ?>"<?= $verInativas ? '' : ' aria-current="page"' ?>>Ativas</a>
+            <a href="<?= url('clientes/?status=inativas') ?>" class="btn btn-sm <?= $verInativas ? 'btn-primary' : 'btn-outline-primary' ?>"<?= $verInativas ? ' aria-current="page"' : '' ?>>Desativadas</a>
+        </div>
     </div>
+
+    <?php if (!$clientes): ?>
+        <div class="estado-vazio">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <h2><?= $verInativas ? 'Nenhuma cliente desativada' : 'Nenhuma cliente cadastrada' ?></h2>
+            <?php if (!$verInativas): ?>
+                <p class="mb-0">Clique em <strong>Nova cliente</strong> para cadastrar a primeira.</p>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <div class="mb-3">
+            <label class="visually-hidden" for="busca-clientes">Buscar cliente</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+                <input class="form-control" id="busca-clientes" type="search" placeholder="Buscar por nome ou telefone">
+            </div>
+        </div>
+
+        <p class="small text-muted" aria-live="polite" data-contador-resultados></p>
+
+        <div class="table-responsive tabela-celular-wrapper">
+            <table class="table table-hover tabela-glow tabela-celular-responsive mb-0">
+                <caption class="visually-hidden">Lista de clientes.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Telefone</th>
+                        <th scope="col">Nascimento</th>
+                        <th scope="col" class="acoes">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($clientes as $cliente): ?>
+                        <tr data-item-lista>
+                            <td data-label="Nome"><strong><?= e($cliente['nm_cliente']) ?></strong></td>
+                            <td data-label="Telefone"><?= e($cliente['nu_telefone']) ?></td>
+                            <td data-label="Nascimento">
+                                <?= $cliente['dt_nascimento'] ? e(date('d/m/Y', strtotime($cliente['dt_nascimento']))) : '<span class="text-muted">—</span>' ?>
+                            </td>
+                            <td data-label="Ações" class="acoes">
+                                <div class="d-inline-flex flex-wrap gap-2">
+                                <?php if ($verInativas): ?>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-reativar="<?= $cliente['cd_cliente'] ?>">Reativar</button>
+                                <?php else: ?>
+                                    <a href="<?= url('clientes/editar.php?id=' . $cliente['cd_cliente']) ?>" class="btn btn-sm btn-outline-primary">Editar</a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-desativar="<?= $cliente['cd_cliente'] ?>">Desativar</button>
+                                <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr data-sem-resultados class="d-none">
+                        <td colspan="4" class="text-center text-muted py-4">Nenhuma cliente encontrada com essa busca.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
 </section>
 
-<!-- 3. O JavaScript da tela fica em public/assets/js/<modulo>.js, com defer -->
 <script src="<?= url('assets/js/clientes.js') ?>" defer></script>
 <?php require __DIR__ . '/../../app/views/partials/footer.php'; ?>
 ```
@@ -116,43 +154,50 @@ O que observar:
 - Os `require` do `init.php` e do repository vêm **antes** do header. O `$pdo` vem do `init.php`.
 - Cada linha tem `data-item-lista`, e a `<section>` tem `data-lista-filtro data-busca="id-do-campo-de-busca"`. A busca funciona sozinha.
 - O `?salvo=1` é o jeito de mostrar "salvo com sucesso" depois que o JavaScript volta para a lista.
+- Os botões de ação ficam dentro de um `<div class="d-inline-flex flex-wrap gap-2">`, para ficarem lado a lado também no celular.
+- `?status=inativas` mostra as desativadas, com o botão **Reativar** (`PUT` com `fg_status: 1`).
 
-### 2. Formulário: `public/clientes/formulario.php`
+### 2. Formulário: `app/views/clientes/formulario.php`
 
 ```php
 <?php
 /**
- * Formulário de cliente, usado pelo criar.php e pelo editar.php.
- * Antes de incluir, defina $cliente (array com os dados, ou [] no cadastro).
- * O "name" de cada campo é o mesmo nome da API (nm_cliente, nu_telefone...).
+ * Formulário de cliente, usado por public/clientes/criar.php e editar.php.
+ * Antes de incluir, defina $cliente: [] no cadastro ou os dados vindos de buscar_cliente().
+ * O "name" de cada campo é o nome usado pela API (nm_cliente, nu_telefone, dt_nascimento).
  */
+$editando = isset($cliente['cd_cliente']);
 ?>
 <form id="form-cliente" class="card-glow p-3 p-lg-4" novalidate
-      data-api="<?= e(isset($cliente['cd_cliente']) ? 'api/clientes.php?id=' . $cliente['cd_cliente'] : 'api/clientes.php') ?>"
-      data-metodo="<?= isset($cliente['cd_cliente']) ? 'PUT' : 'POST' ?>">
+      data-api="<?= e($editando ? 'api/clientes.php?id=' . $cliente['cd_cliente'] : 'api/clientes.php') ?>"
+      data-metodo="<?= $editando ? 'PUT' : 'POST' ?>">
 
-    <!-- Mensagem geral de erro (fica escondida até a API responder com erro) -->
+    <!-- Mensagem geral de erro: fica escondida até a API responder com erro -->
     <div class="alert alert-danger d-none" role="alert" data-erro-formulario></div>
 
-    <div class="mb-3">
-        <label class="form-label" for="nm_cliente">Nome *</label>
-        <input class="form-control" id="nm_cliente" name="nm_cliente" maxlength="120"
-               value="<?= e($cliente['nm_cliente'] ?? '') ?>">
+    <div class="row g-3">
+        <div class="col-12">
+            <label class="form-label" for="nm_cliente">Nome *</label>
+            <input class="form-control" id="nm_cliente" name="nm_cliente" maxlength="120" autocomplete="off"
+                   value="<?= e($cliente['nm_cliente'] ?? '') ?>">
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label" for="nu_telefone">Telefone (WhatsApp) *</label>
+            <input class="form-control" id="nu_telefone" name="nu_telefone" type="tel" inputmode="tel" placeholder="(11) 90000-0000"
+                   value="<?= e($cliente['nu_telefone'] ?? '') ?>">
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label" for="dt_nascimento">Data de nascimento</label>
+            <input class="form-control" id="dt_nascimento" name="dt_nascimento" type="date" max="<?= date('Y-m-d') ?>"
+                   value="<?= e($cliente['dt_nascimento'] ?? '') ?>">
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label" for="nu_telefone">Telefone *</label>
-        <input class="form-control" id="nu_telefone" name="nu_telefone" placeholder="(11) 90000-0000"
-               value="<?= e($cliente['nu_telefone'] ?? '') ?>">
-    </div>
+    <p class="small text-muted mt-3 mb-0">Campos com * são obrigatórios.</p>
 
-    <div class="mb-3">
-        <label class="form-label" for="dt_nascimento">Data de nascimento</label>
-        <input class="form-control" id="dt_nascimento" name="dt_nascimento" type="date"
-               value="<?= e($cliente['dt_nascimento'] ?? '') ?>">
-    </div>
-
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2 mt-3">
         <button type="submit" class="btn btn-primary">Salvar</button>
         <a href="<?= url('clientes/') ?>" class="btn btn-outline-secondary">Cancelar</a>
     </div>
@@ -164,6 +209,7 @@ O que observar:
 - `data-api` e `data-metodo` dizem para onde o formulário envia: `POST api/clientes.php` no cadastro e `PUT api/clientes.php?id=3` na edição.
 - `novalidate` desliga a validação do navegador: quem valida é a API, e o erro aparece embaixo do campo do mesmo jeito em todas as telas.
 - `data-erro-formulario` é onde aparece a mensagem geral ("Confira os campos da cliente.").
+- Fica em `app/views/<modulo>/` porque não é uma página: sozinho, ele não funciona (o `app/.htaccess` bloqueia o acesso direto).
 
 ### 3. Cadastro e edição: `criar.php` e `editar.php`
 
@@ -179,10 +225,13 @@ require __DIR__ . '/../../app/views/partials/header.php';
 ?>
 
 <div class="cabecalho-pagina">
-    <div><h1>Nova cliente</h1></div>
+    <div>
+        <h1>Nova cliente</h1>
+        <p>Preencha os dados de contato da cliente.</p>
+    </div>
 </div>
 
-<?php require __DIR__ . '/formulario.php'; ?>
+<?php require __DIR__ . '/../../app/views/clientes/formulario.php'; ?>
 <?php require __DIR__ . '/../../app/views/partials/footer.php'; ?>
 ```
 
@@ -194,8 +243,8 @@ require __DIR__ . '/../../app/repositories/clientes/clientes.php';
 $id = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 $cliente = $id ? buscar_cliente($pdo, $id) : null;
 
-if (!$cliente) {
-    flash('Cliente não encontrada.', 'danger');
+if (!$cliente || $cliente['fg_status'] !== 1) {
+    flash('Cliente não encontrada ou desativada.', 'danger');
     redirecionar('clientes/');
 }
 
@@ -205,19 +254,22 @@ require __DIR__ . '/../../app/views/partials/header.php';
 ?>
 
 <div class="cabecalho-pagina">
-    <div><h1>Editar cliente</h1></div>
+    <div>
+        <h1>Editar cliente</h1>
+        <p><?= e($cliente['nm_cliente']) ?></p>
+    </div>
 </div>
 
-<?php require __DIR__ . '/formulario.php'; ?>
+<?php require __DIR__ . '/../../app/views/clientes/formulario.php'; ?>
 <?php require __DIR__ . '/../../app/views/partials/footer.php'; ?>
 ```
 
-No `editar.php`, os dados vêm do repository (`buscar_cliente`) e preenchem o formulário pelo `value`. Se o id não existir, volta para a lista com uma mensagem (`flash` + `redirecionar`).
+No `editar.php`, os dados vêm do repository (`buscar_cliente`) e preenchem o formulário pelo `value`. Se o id não existir (ou a cliente estiver desativada), volta para a lista com uma mensagem (`flash` + `redirecionar`).
 
 ### 4. JavaScript: `public/assets/js/clientes.js`
 
 ```javascript
-// Tela de clientes (public/clientes/). Guia: docs/front.md
+// Tela de clientes (public/clientes/). Padrão das telas: docs/front.md
 
 // Formulário de cadastro e edição
 const formCliente = document.getElementById('form-cliente');
@@ -230,18 +282,32 @@ if (formCliente) {
     });
 }
 
-// Botão de desativar da lista
-document.querySelectorAll('[data-desativar]').forEach((botao) => {
-    botao.addEventListener('click', async () => {
-        if (!confirm('Desativar esta cliente?')) return;
+// Desativar (lista de ativas) e reativar (lista de desativadas)
+async function alterarSituacaoCliente(botao, opcoes, pergunta) {
+    if (!confirm(pergunta)) return;
 
-        try {
-            await glowApi('api/clientes.php?id=' + botao.dataset.desativar, { method: 'DELETE' });
-            botao.closest('tr').remove();
-        } catch (erro) {
-            alert(erro.message);
-        }
-    });
+    botao.disabled = true;
+
+    try {
+        await glowApi('api/clientes.php?id=' + (botao.dataset.desativar || botao.dataset.reativar), opcoes);
+        // Recarrega a lista (sem o aviso de "salvo" de antes)
+        const endereco = new URL(window.location.href);
+        endereco.searchParams.delete('salvo');
+        window.location.href = endereco.toString();
+    } catch (erro) {
+        alert(erro.message);
+        botao.disabled = false;
+    }
+}
+
+document.querySelectorAll('[data-desativar]').forEach((botao) => {
+    botao.addEventListener('click', () => alterarSituacaoCliente(botao, { method: 'DELETE' },
+        'Desativar esta cliente? Ela sai da lista e não pode receber agendamentos novos.'));
+});
+
+document.querySelectorAll('[data-reativar]').forEach((botao) => {
+    botao.addEventListener('click', () => alterarSituacaoCliente(botao, { method: 'PUT', body: { fg_status: 1 } },
+        'Reativar esta cliente?'));
 });
 ```
 
