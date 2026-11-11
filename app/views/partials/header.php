@@ -19,6 +19,7 @@ $itensMenu = [
     'produtos'     => ['Produtos', 'bi-gem', 'produtos/'],
     'estoque'      => ['Estoque', 'bi-box-seam', 'estoque/'],
     'esterilizacao' => ['Esterilização', 'bi-shield-check', 'esterilizacao/'],
+    'financeiro'   => ['Financeiro', 'bi-cash-coin', 'financeiro/'],
 ];
 ?>
 <!DOCTYPE html>
@@ -27,6 +28,10 @@ $itensMenu = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($tituloPagina) ?></title>
+
+    <!-- Usados pela função glowApi() de public/assets/js/app.js -->
+    <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+    <meta name="base-url" content="<?= e(url()) ?>">
 
     <!-- Fontes: Playfair Display (títulos) e Inter (textos) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -12,11 +12,11 @@ $itensDemo = [
         'tipo_chave' => 'consumo',
         'lote' => 'LU-26-041',
         'validade' => '15/02/2027',
-        'quantidade' => '18 pares',
+        'quantidade' => 18,
         'situacao' => 'Estoque baixo',
         'status_chave' => 'baixo',
         'badge' => 'text-bg-warning',
-        'detalhe' => 'Mínimo: 24 pares',
+        'detalhe' => 'Mínimo: 24',
     ],
     [
         'nome' => 'Gaze estéril · 7,5 cm',
@@ -24,7 +24,7 @@ $itensDemo = [
         'tipo_chave' => 'consumo',
         'lote' => 'GA-26-021',
         'validade' => '22/10/2026',
-        'quantidade' => '32 pacotes',
+        'quantidade' => 32,
         'situacao' => 'Validade próxima',
         'status_chave' => 'validade',
         'badge' => 'text-bg-warning',
@@ -36,11 +36,11 @@ $itensDemo = [
         'tipo_chave' => 'consumo',
         'lote' => 'AL-26-004',
         'validade' => '18/12/2026',
-        'quantidade' => '5 unidades',
+        'quantidade' => 5,
         'situacao' => 'Regular',
         'status_chave' => 'regular',
         'badge' => 'text-bg-success',
-        'detalhe' => 'Mínimo: 3 unidades',
+        'detalhe' => 'Mínimo: 3',
     ],
     [
         'nome' => 'Cateter · calibre 18G',
@@ -48,11 +48,11 @@ $itensDemo = [
         'tipo_chave' => 'consumo',
         'lote' => 'CA-26-018',
         'validade' => '10/03/2027',
-        'quantidade' => '40 unidades',
+        'quantidade' => 40,
         'situacao' => 'Regular',
         'status_chave' => 'regular',
         'badge' => 'text-bg-success',
-        'detalhe' => 'Mínimo: 20 unidades',
+        'detalhe' => 'Mínimo: 20',
     ],
     [
         'nome' => 'Brinco argola lisa · aço cirúrgico',
@@ -60,7 +60,7 @@ $itensDemo = [
         'tipo_chave' => 'venda',
         'lote' => '—',
         'validade' => '—',
-        'quantidade' => '12 unidades',
+        'quantidade' => 12,
         'situacao' => 'Regular',
         'status_chave' => 'regular',
         'badge' => 'text-bg-success',
@@ -189,7 +189,7 @@ $itensVencendo = count(array_filter($itensDemo, fn(array $item): bool => $item['
                         </td>
                         <td data-label="Lote"><?= e($item['lote']) ?></td>
                         <td data-label="Validade fabricante"><?= e($item['validade']) ?></td>
-                        <td data-label="Quantidade" class="text-md-end"><?= e($item['quantidade']) ?>
+                        <td data-label="Quantidade" class="text-md-end"><?= e((string) $item['quantidade']) ?>
                             <span class="d-block small text-muted"><?= e($item['detalhe']) ?></span>
                         </td>
                         <td data-label="Situação"><span class="badge <?= e($item['badge']) ?>"><?= e($item['situacao']) ?></span></td>

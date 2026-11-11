@@ -41,29 +41,43 @@ require __DIR__ . '/../../app/views/partials/header.php';
                 <option>Kits de procedimento</option>
             </select>
         </div>
-        <div class="col-12 col-lg-8">
-            <fieldset>
-                <legend class="form-label">Finalidade do item <span class="text-danger">*</span></legend>
-                <div class="d-flex flex-column flex-sm-row gap-2">
-                    <label class="opcao-finalidade flex-fill">
-                        <input class="form-check-input" type="radio" name="finalidade-demo" value="consumo">
-                        <span><strong>Uso e consumo / procedimento</strong><small class="d-block text-muted">Insumos usados durante o atendimento.</small></span>
-                    </label>
-                    <label class="opcao-finalidade flex-fill">
-                        <input class="form-check-input" type="radio" name="finalidade-demo" value="venda">
-                        <span><strong>Venda / aplicação</strong><small class="d-block text-muted">Joias e itens escolhidos pela cliente.</small></span>
-                    </label>
+        <div class="col-12">
+            <fieldset class="grupo-finalidade" aria-describedby="ajuda-finalidade">
+                <legend>Finalidade do item <span class="text-danger">*</span></legend>
+                <p id="ajuda-finalidade" class="small text-muted mb-3">Escolha como o item será usado para separar insumos de procedimento das joias vendidas ou aplicadas.</p>
+                <div class="row g-2">
+                    <div class="col-12 col-md-6">
+                        <label class="opcao-finalidade h-100">
+                            <input class="form-check-input" type="radio" name="finalidade-demo" value="consumo">
+                            <span><strong>Uso e consumo / procedimento</strong><small class="d-block text-muted">Insumos usados durante o atendimento.</small></span>
+                        </label>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="opcao-finalidade h-100">
+                            <input class="form-check-input" type="radio" name="finalidade-demo" value="venda">
+                            <span><strong>Venda / aplicação</strong><small class="d-block text-muted">Joias escolhidas pela cliente e cobradas no atendimento.</small></span>
+                        </label>
+                    </div>
                 </div>
             </fieldset>
         </div>
-        <div class="col-12 col-sm-6 col-lg-4">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <label class="form-label" for="produto-preco-compra">Preço de compra unitário</label>
+            <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input class="form-control" type="number" id="produto-preco-compra" min="0" step="0.01" placeholder="0,00">
+            </div>
+            <div class="form-text">Custo de referência por unidade. Cada compra deverá guardar seu valor real no Financeiro para manter o histórico.</div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-4">
             <label class="form-label" for="produto-preco">Preço de venda (quando aplicável)</label>
             <div class="input-group">
                 <span class="input-group-text">R$</span>
                 <input class="form-control" type="number" id="produto-preco" min="0" step="0.01" placeholder="0,00">
             </div>
+            <div class="form-text">Para joias vendidas ou aplicadas durante um atendimento.</div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-4">
+        <div class="col-12 col-sm-6 col-xl-4">
             <label class="form-label" for="produto-minimo">Estoque mínimo</label>
             <input class="form-control" type="number" id="produto-minimo" min="0" placeholder="0">
             <div class="form-text">O sistema poderá alertar quando a quantidade atingir este ponto.</div>

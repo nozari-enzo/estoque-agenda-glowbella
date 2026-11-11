@@ -6,133 +6,165 @@ O diagrama abaixo é renderizado automaticamente pelo GitHub.
 
 ```mermaid
 erDiagram
-    usuarios ||--o{ movimentacoes_estoque : "registra"
-    usuarios ||--o{ agendamentos : "cadastra"
-    categorias ||--o{ produtos : "agrupa"
-    produtos ||--o{ movimentacoes_estoque : "tem"
-    clientes ||--o{ agendamentos : "faz"
-    servicos ||--o{ agendamentos : "é agendado em"
+    categoria ||--o{ produto : "agrupa"
+    produto ||--o{ movimentacao : "tem"
+    admin ||--o{ movimentacao : "registra"
+    cliente ||--o{ agenda : "faz"
+    esterilizacao ||--|{ esterilizacao_produto : "contém"
+    produto ||--o{ esterilizacao_produto : "é esterilizado em"
 
-    usuarios {
-        int id PK
-        varchar nome
-        varchar email UK
-        varchar senha_hash
-        enum perfil "admin | funcionario"
-        tinyint ativo
+    admin {
+        int cd_usuario PK
+        varchar nm_usuario
+        varchar ds_email UK
+        varchar ds_senha "hash do password_hash()"
+        tinyint fg_status "1 ativo, 0 inativo"
     }
 
-    categorias {
-        int id PK
-        varchar nome UK
-        varchar descricao
+    categoria {
+        int cd_categoria PK
+        varchar nm_categoria UK
+        tinyint fg_status
     }
 
-    produtos {
-        int id PK
-        int categoria_id FK
-        varchar codigo UK
-        varchar nome
-        text descricao
-        varchar material
-        decimal preco
-        int quantidade "estoque atual"
-        int estoque_minimo "alerta de reposição"
-        varchar foto
-        tinyint ativo
+    cliente {
+        int cd_cliente PK
+        varchar nm_cliente
+        date dt_nascimento
+        varchar nu_telefone UK
+        tinyint fg_status
     }
 
-    movimentacoes_estoque {
-        int id PK
-        int produto_id FK
-        int usuario_id FK
-        enum tipo "entrada | saida"
-        enum motivo "compra | venda | ajuste | perda | devolucao"
-        int quantidade
-        varchar observacao
-        timestamp criado_em
+    produto {
+        int cd_produto PK
+        varchar nm_produto
+        enum fg_finalidade "venda | procedimento"
+        varchar ds_lote
+        decimal vl_compra
+        decimal vl_produto
+        int qtd_produto "estoque atual"
+        int qtd_estoque_minimo "alerta de reposição"
+        date dt_validade
+        int cd_categoria FK
+        tinyint fg_status
     }
 
-    clientes {
-        int id PK
-        varchar nome
-        varchar telefone UK
-        varchar email
-        date data_nascimento
-        text observacoes
+    movimentacao {
+        int cd_movimentacao PK
+        int cd_produto FK
+        int cd_usuario FK
+        enum fg_tipo "entrada | saida"
+        int qtd_movimentada
+        varchar ds_motivo
+        datetime dt_movimentacao
     }
 
-    servicos {
-        int id PK
-        varchar nome UK
-        varchar descricao
-        smallint duracao_minutos
-        decimal preco
-        tinyint ativo
+    agenda {
+        int cd_agenda PK
+        int cd_cliente FK
+        datetime dt_agendamento "início"
+        datetime dt_fim
+        varchar ds_procedimento
+        enum fg_status "agendado | concluido | cancelado"
     }
 
-    agendamentos {
-        int id PK
-        int cliente_id FK
-        int servico_id FK
-        int usuario_id FK
-        datetime inicio
-        datetime fim
-        enum status "agendado | concluido | cancelado"
-        text observacoes
+    esterilizacao {
+        int cd_esterilizacao PK
+        varchar nm_metodo
+        date dt_esterilizacao
+        date dt_validade_esterilizacao
+        enum fg_indicador_quimico "pendente | aprovado | reprovado"
+        enum fg_indicador_biologico "pendente | aprovado | reprovado"
+        tinyint fg_status
+    }
+
+    esterilizacao_produto {
+        int cd_esterilizacao PK, FK
+        int cd_produto PK, FK
+        int qtd_produto
     }
 ```
 
-Todas as tabelas (menos `movimentacoes_estoque`) também têm `criado_em` e `atualizado_em`, preenchidos automaticamente pelo banco.
+## Padrão de nomes
+
+| Prefixo | Significado | Exemplo |
+|---|---|---|
+| `cd_` | Código (chave primária ou estrangeira) | `cd_produto` |
+| `nm_` | Nome | `nm_cliente` |
+| `ds_` | Descrição ou texto | `ds_procedimento` |
+| `dt_` | Data ou data e hora | `dt_agendamento` |
+| `vl_` | Valor em dinheiro | `vl_produto` |
+| `qtd_` | Quantidade | `qtd_estoque_minimo` |
+| `nu_` | Número de contato ou documento (guardado como texto) | `nu_telefone` |
+| `fg_` | Situação ou tipo, com valores fixos | `fg_status` |
+
+Tabelas no **singular** e em minúsculas.
 
 ## Tabelas
 
-| Tabela | Para que serve | Usada em |
-|---|---|---|
-| `usuarios` | Quem acessa o sistema (dona e funcionárias) | US13 – Login |
-| `categorias` | Agrupa os produtos (Brincos, Piercings, Acessórios) | US06 – Produtos |
-| `produtos` | Catálogo e estoque atual de cada item | US06, US08, US09 |
-| `movimentacoes_estoque` | Histórico de entradas e saídas | US08 – Controle de estoque |
-| `clientes` | Cadastro de clientes | US07 – Clientes |
-| `servicos` | Serviços que podem ser agendados | US10 – Agendamentos |
-| `agendamentos` | Horários marcados | US10, US11 |
-| `migracoes` | Controle interno do `database/migrar.php` | — |
+| Tabela | Para que serve |
+|---|---|
+| `admin` | Quem acessa o sistema (dona e funcionárias) |
+| `categoria` | Agrupa os produtos (Brincos, Piercings, Acessórios) |
+| `cliente` | Cadastro de clientes |
+| `produto` | Catálogo, lote, validade e estoque atual de cada item |
+| `movimentacao` | Histórico de entradas e saídas de estoque |
+| `agenda` | Horários marcados para cada cliente |
+| `esterilizacao` | Ciclos de esterilização (ex.: autoclave) e seus indicadores |
+| `esterilizacao_produto` | Quais produtos (e quantos) foram esterilizados em cada ciclo |
+| `migracoes` | Controle interno do `database/migrar.php` |
+
+## Valores dos campos `fg_`
+
+| Campo | Valores |
+|---|---|
+| `fg_status` em `admin`, `categoria`, `cliente`, `produto` e `esterilizacao` | `1` ativo, `0` inativo |
+| `agenda.fg_status` | `agendado`, `concluido`, `cancelado` |
+| `produto.fg_finalidade` | `venda` (vendido à cliente) ou `procedimento` (usado nos atendimentos) |
+| `movimentacao.fg_tipo` | `entrada` ou `saida` |
+| `esterilizacao.fg_indicador_quimico` e `fg_indicador_biologico` | `pendente`, `aprovado`, `reprovado` |
 
 ## Regras de negócio importantes
 
 **Estoque**
-- `produtos.quantidade` é o estoque atual, mas **nunca deve ser alterado diretamente**. Toda mudança acontece junto com um registro em `movimentacoes_estoque`, dentro de uma transação:
+- `produto.qtd_produto` é o estoque atual, mas **nunca deve ser alterado diretamente**. Toda mudança acontece junto com um registro em `movimentacao`, dentro de uma transação:
   ```php
   $pdo->beginTransaction();
-  // 1. INSERT INTO movimentacoes_estoque (...)
-  // 2. UPDATE produtos SET quantidade = quantidade + ? WHERE id = ?   (entrada)
-  //    UPDATE produtos SET quantidade = quantidade - ? WHERE id = ? AND quantidade >= ?   (saída)
+  // 1. INSERT INTO movimentacao (cd_produto, cd_usuario, fg_tipo, qtd_movimentada, ds_motivo) ...
+  // 2. UPDATE produto SET qtd_produto = qtd_produto + ? WHERE cd_produto = ?                      (entrada)
+  //    UPDATE produto SET qtd_produto = qtd_produto - ? WHERE cd_produto = ? AND qtd_produto >= ?  (saída)
   $pdo->commit();
   ```
 - Na saída, se o `UPDATE` não afetar nenhuma linha (`rowCount() === 0`), é porque não há estoque suficiente: faça `rollBack()` e mostre o erro.
-- **Estoque baixo** (US09): `quantidade < estoque_minimo`.
+- **Estoque baixo:** `qtd_produto < qtd_estoque_minimo`.
+- **Validade vencendo:** `dt_validade` próxima de `CURDATE()`.
 
 **Exclusões**
-- Produtos, serviços e usuários **não são apagados**, são desativados (`ativo = 0`). Assim o histórico de movimentações e agendamentos continua existindo.
-- As chaves estrangeiras usam `ON DELETE RESTRICT`: o banco impede apagar um cliente que tem agendamentos, ou uma categoria que tem produtos. Trate esse erro mostrando uma mensagem amigável.
+- Admin, categoria, cliente, produto e esterilização **não são apagados**: são desativados (`fg_status = 0`). Assim o histórico continua existindo.
+- As chaves estrangeiras usam `ON DELETE RESTRICT`: o banco impede apagar uma cliente que tem agendamentos, ou uma categoria que tem produtos. Trate esse erro mostrando uma mensagem amigável.
 
-**Agendamentos**
-- `inicio` e `fim` guardam data e hora. O `fim` pode ser calculado a partir da `duracao_minutos` do serviço.
-- **Conflito de horário** (US10): existe conflito se houver algum agendamento não cancelado que se sobreponha ao novo horário:
+**Agenda**
+- `dt_agendamento` (início) e `dt_fim` guardam data e hora.
+- **Conflito de horário:** existe conflito se algum agendamento não cancelado se sobrepõe ao novo horário:
   ```sql
-  SELECT COUNT(*) FROM agendamentos
-  WHERE status <> 'cancelado'
-    AND inicio < :novo_fim
-    AND fim > :novo_inicio
+  SELECT COUNT(*) FROM agenda
+  WHERE fg_status <> 'cancelado'
+    AND dt_agendamento < :novo_fim
+    AND dt_fim > :novo_inicio
   ```
 
+**Esterilização**
+- Um ciclo pode levar vários produtos: eles ficam em `esterilizacao_produto`.
+- Um ciclo está **válido** quando `dt_validade_esterilizacao >= CURDATE()` e nenhum indicador está `reprovado`.
+
 **Validações garantidas pelo próprio banco**
-- Preço de produto e serviço não pode ser negativo.
-- Quantidade de uma movimentação precisa ser maior que zero.
-- O `fim` do agendamento precisa ser depois do `inicio`.
-- E-mail de usuário, telefone de cliente, código de produto e nomes de categoria/serviço não se repetem.
+- Valores (`vl_compra`, `vl_produto`) não podem ser negativos.
+- Quantidade de uma movimentação e de um produto no ciclo precisa ser maior que zero.
+- `agenda.dt_fim` precisa ser depois de `dt_agendamento`.
+- `dt_validade_esterilizacao` não pode ser antes de `dt_esterilizacao`.
+- E-mail do admin, telefone da cliente e nome da categoria não se repetem.
 
-## Pendências a confirmar com o cliente
+## Pontos a confirmar com a cliente
 
-- **Vendas (US12):** se o cliente quiser o registro de vendas, serão criadas as tabelas `vendas` e `itens_venda`, e `movimentacoes_estoque` ganha uma coluna `venda_id`. Isso será feito em uma migration nova, sem alterar as existentes.
-- **Quem atende o agendamento:** hoje `agendamentos.usuario_id` indica quem cadastrou. Se houver mais de uma profissional aplicando piercings, ele pode passar a indicar quem vai atender.
+- **Lote:** hoje cada produto tem **um** lote e **uma** validade (`ds_lote` e `dt_validade` em `produto`). Se a loja compra o mesmo produto em lotes com validades diferentes, o lote precisa virar uma tabela própria.
+- **Vendas:** se a cliente quiser o registro de vendas, serão criadas as tabelas de venda em uma migration nova, sem alterar as existentes.

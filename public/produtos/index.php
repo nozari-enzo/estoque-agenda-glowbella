@@ -6,10 +6,10 @@ $menu = 'produtos';
 require __DIR__ . '/../../app/views/partials/header.php';
 
 $produtosDemo = [
-    ['nome' => 'Luva estéril · tamanho M', 'categoria' => 'Insumos', 'tipo' => 'Uso e consumo / procedimento', 'tipo_chave' => 'consumo', 'rastreamento' => 'Lote e validade', 'estoque' => '18 pares'],
-    ['nome' => 'Gaze estéril · 7,5 cm', 'categoria' => 'Insumos', 'tipo' => 'Uso e consumo / procedimento', 'tipo_chave' => 'consumo', 'rastreamento' => 'Lote e validade', 'estoque' => '32 pacotes'],
-    ['nome' => 'Brinco argola lisa · aço cirúrgico', 'categoria' => 'Brincos', 'tipo' => 'Venda / aplicação', 'tipo_chave' => 'venda', 'rastreamento' => 'Definir regra de lote', 'estoque' => '12 unidades'],
-    ['nome' => 'Cateter · calibre 18G', 'categoria' => 'Insumos', 'tipo' => 'Uso e consumo / procedimento', 'tipo_chave' => 'consumo', 'rastreamento' => 'Lote e validade', 'estoque' => '40 unidades'],
+    ['nome' => 'Luva estéril · tamanho M', 'categoria' => 'Insumos', 'tipo' => 'Uso e consumo / procedimento', 'tipo_chave' => 'consumo', 'rastreamento' => 'Lote e validade', 'estoque' => 18],
+    ['nome' => 'Gaze estéril · 7,5 cm', 'categoria' => 'Insumos', 'tipo' => 'Uso e consumo / procedimento', 'tipo_chave' => 'consumo', 'rastreamento' => 'Lote e validade', 'estoque' => 32],
+    ['nome' => 'Brinco argola lisa · aço cirúrgico', 'categoria' => 'Brincos', 'tipo' => 'Venda / aplicação', 'tipo_chave' => 'venda', 'rastreamento' => 'Definir regra de lote', 'estoque' => 12],
+    ['nome' => 'Cateter · calibre 18G', 'categoria' => 'Insumos', 'tipo' => 'Uso e consumo / procedimento', 'tipo_chave' => 'consumo', 'rastreamento' => 'Lote e validade', 'estoque' => 40],
 ];
 ?>
 
@@ -106,7 +106,7 @@ $produtosDemo = [
                         <td data-label="Categoria"><?= e($produto['categoria']) ?></td>
                         <td data-label="Finalidade"><span class="badge <?= $produto['tipo_chave'] === 'consumo' ? 'text-bg-primary' : 'text-bg-secondary' ?>"><?= e($produto['tipo']) ?></span></td>
                         <td data-label="Rastreamento"><?= e($produto['rastreamento']) ?></td>
-                        <td data-label="Estoque" class="text-md-end"><?= e($produto['estoque']) ?></td>
+                        <td data-label="Estoque" class="text-md-end"><?= e((string) $produto['estoque']) ?></td>
                         <td data-label="Ação" class="acoes"><button class="btn btn-sm btn-outline-primary" type="button">Editar</button></td>
                     </tr>
                 <?php endforeach; ?>
