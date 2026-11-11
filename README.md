@@ -91,7 +91,7 @@ estoque-agenda-glowbella/
 │   ├── index.php           Home
 │   ├── api/                APIs em JSON usadas pelas telas (auth.php, produtos.php...)
 │   ├── produtos/           Catálogo e protótipo de cadastro
-│   ├── clientes/
+│   ├── clientes/           Lista, cadastro e edição de clientes (tela de referência)
 │   ├── estoque/
 │   ├── esterilizacao/      Protótipo de histórico de ciclos
 │   ├── agendamentos/
