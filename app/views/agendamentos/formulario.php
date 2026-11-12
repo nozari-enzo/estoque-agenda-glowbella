@@ -41,7 +41,8 @@ $clientes = listar_clientes($pdo, ['fg_status' => '1']);
 
         <div class="col-12 col-md-4">
             <label class="form-label" for="qtd_duracao_min">Duração (minutos) *</label>
-            <input class="form-control" id="qtd_duracao_min" name="qtd_duracao_min" type="number" min="5" step="5" value="30">
+            <input class="form-control" id="qtd_duracao_min" name="qtd_duracao_min" type="number" min="5" step="5"
+                   value="<?= $editando ? (int) round((strtotime($agendamento['dt_fim']) - strtotime($agendamento['dt_agendamento'])) / 60) : 30 ?>">
         </div>
 
         <?php if ($editando): ?>
