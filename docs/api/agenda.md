@@ -27,6 +27,7 @@ Regras gerais (login, CSRF, códigos de resposta): [`docs/api.md`](../api.md).
 | `dt_agendamento` | Sim | Início: `AAAA-MM-DD HH:MM` (aceita o valor do `<input type="datetime-local">`) |
 | `qtd_duracao_min` **ou** `dt_fim` | Sim (um dos dois) | Duração em minutos, ou o fim em `AAAA-MM-DD HH:MM`. O fim precisa ser depois do início |
 | `ds_procedimento` | Sim | Até 150 caracteres (ex.: "Aplicação de piercing - hélix") |
+| `vl_procedimento` | Não | Valor cobrado pelo procedimento, ≥ 0 (aceita `120` ou `"120,00"`). No `PUT`, se não vier, mantém o atual |
 | `fg_status` | Não (padrão `agendado`) | `agendado`, `concluido` ou `cancelado` |
 
 **Regras:**
@@ -41,7 +42,7 @@ Regras gerais (login, CSRF, códigos de resposta): [`docs/api.md`](../api.md).
 - **Remarcar:** um `PUT` só com `dt_agendamento` mantém a mesma duração.
 - **Concluir:** `PUT` com `{ "fg_status": "concluido" }`.
 - **Cancelar** libera o horário para outro agendamento.
-- Cada agendamento já vem com `nm_cliente` e `nu_telefone` da cliente.
+- Cada agendamento já vem com `nm_cliente` e `nu_telefone` da cliente, `vl_procedimento` (ou `null`) e `qtd_duracao_min` (calculada pelo início e pelo fim).
 
 **Exemplos:**
 ```javascript

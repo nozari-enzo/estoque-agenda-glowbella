@@ -352,6 +352,100 @@ h1, h2, h3, .titulo-elegante {
     color: #6f6573;
 }
 
+/* Calendário mensal da agenda (public/agendamentos/) */
+.calendario-titulo {
+    min-width: 140px;
+    text-align: center;
+}
+
+.calendario-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    min-width: 750px;
+    background-color: var(--glow-borda);
+    border: 1px solid var(--glow-borda);
+    border-radius: var(--glow-raio);
+    overflow: hidden;
+}
+
+.calendario-header {
+    background-color: var(--glow-primaria-clara);
+    color: var(--glow-escuro);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.calendario-dia {
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-height: 120px;
+    padding: 0.5rem;
+}
+
+.calendario-dia.vazio {
+    background-color: var(--glow-fundo);
+}
+
+.calendario-dia.hoje {
+    background-color: #fff6fa;
+}
+
+.calendario-numero {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    text-align: right;
+}
+
+.calendario-numero a {
+    border-radius: 50%;
+    color: var(--glow-escuro);
+    padding: 0.2rem 0.5rem;
+    text-decoration: none;
+}
+
+.calendario-numero a:hover {
+    background-color: var(--glow-primaria-clara);
+}
+
+.calendario-numero a.ativo {
+    background-color: var(--glow-primaria);
+    color: #fff;
+}
+
+.evento-badge {
+    background-color: var(--glow-primaria);
+    border-radius: 0.25rem;
+    color: #fff;
+    display: block;
+    font-size: 0.7rem;
+    overflow: hidden;
+    padding: 0.25rem 0.4rem;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.evento-badge:hover {
+    background-color: var(--glow-primaria-escura);
+    color: #fff;
+}
+
+.evento-badge.evento-concluido {
+    background-color: #1e6b3d;
+}
+
+.evento-badge.evento-cancelado {
+    background-color: #8a808d;
+    opacity: 0.75;
+    text-decoration: line-through;
+}
+
 /* Linha de produto com estoque baixo */
 .estoque-baixo {
     --bs-table-bg: #fff6e5;

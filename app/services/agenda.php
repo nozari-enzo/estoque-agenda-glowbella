@@ -19,6 +19,7 @@ function validar_agendamento(PDO $pdo, array $entrada): array
         'dt_agendamento'  => validar_data_hora($entrada, 'dt_agendamento', true, $erros, 'o início do agendamento'),
         'dt_fim'          => null,
         'ds_procedimento' => validar_texto($entrada, 'ds_procedimento', 150, true, $erros, 'o procedimento'),
+        'vl_procedimento' => validar_valor($entrada, 'vl_procedimento', false, $erros, 'o valor do procedimento'),
         'fg_status'       => validar_opcao($entrada, 'fg_status', ['agendado', 'concluido', 'cancelado'], 'agendado', $erros, 'a situação'),
     ];
 
