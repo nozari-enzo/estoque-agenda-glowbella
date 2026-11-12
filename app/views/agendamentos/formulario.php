@@ -1,6 +1,6 @@
 <?php
 $editando = isset($agendamento['cd_agenda']);
-// Busca clientes para o select (já deve existir no repositório de clientes)
+// Busca clientes para o select
 require_once __DIR__ . '/../../repositories/clientes/clientes.php';
 $clientes = listar_clientes($pdo, ['fg_status' => '1']);
 ?>
@@ -19,14 +19,20 @@ $clientes = listar_clientes($pdo, ['fg_status' => '1']);
     <div class="row g-3">
         <div class="col-12 col-md-6">
             <label class="form-label" for="cd_cliente">Cliente *</label>
-            <select class="form-select" id="cd_cliente" name="cd_cliente">
-                <option value="">Selecione...</option>
-                <?php foreach ($clientes as $cliente): ?>
-                    <option value="<?= $cliente['cd_cliente'] ?>" <?= ($agendamento['cd_cliente'] ?? '') == $cliente['cd_cliente'] ? 'selected' : '' ?>>
-                        <?= e($cliente['nm_cliente']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+            <div class="input-group">
+                <select class="form-select" id="cd_cliente" name="cd_cliente">
+                    <option value="">Selecione...</option>
+                    <?php foreach ($clientes as $cliente): ?>
+                        <option value="<?= $cliente['cd_cliente'] ?>" <?= ($agendamento['cd_cliente'] ?? '') == $cliente['cd_cliente'] ? 'selected' : '' ?>>
+                            <?= e($cliente['nm_cliente']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <!-- Botão de atalho para Nova Cliente -->
+                <a href="<?= url('clientes/criar.php') ?>" class="btn btn-outline-secondary" title="Cadastrar nova cliente" target="_blank">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+            </div>
         </div>
 
         <div class="col-12 col-md-6">
@@ -41,8 +47,13 @@ $clientes = listar_clientes($pdo, ['fg_status' => '1']);
 
         <div class="col-12 col-md-4">
             <label class="form-label" for="qtd_duracao_min">Duração (minutos) *</label>
-            <input class="form-control" id="qtd_duracao_min" name="qtd_duracao_min" type="number" min="5" step="5"
-                   value="<?= $editando ? (int) round((strtotime($agendamento['dt_fim']) - strtotime($agendamento['dt_agendamento'])) / 60) : 30 ?>">
+            <input class="form-control" id="qtd_duracao_min" name="qtd_duracao_min" type="number" min="5" step="5" value="<?= e($agendamento['qtd_duracao_min'] ?? 30) ?>">
+        </div>
+
+        <!-- Novo campo: Valor do Procedimento -->
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="vl_procedimento">Valor do Procedimento (R$)</label>
+            <input class="form-control" id="vl_procedimento" name="vl_procedimento" type="number" step="0.01" min="0" placeholder="0.00" value="<?= e($agendamento['vl_procedimento'] ?? '') ?>">
         </div>
 
         <?php if ($editando): ?>

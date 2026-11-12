@@ -11,6 +11,7 @@ if (formAgenda) {
                 dt_agendamento: form.dt_agendamento.value,
                 qtd_duracao_min: Number(form.qtd_duracao_min.value),
                 ds_procedimento: form.ds_procedimento.value.trim(),
+                vl_procedimento: form.vl_procedimento.value ? Number(form.vl_procedimento.value) : null
             };
             if (form.fg_status) {
                 payload.fg_status = form.fg_status.value;
