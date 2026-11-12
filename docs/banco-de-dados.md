@@ -65,6 +65,7 @@ erDiagram
         datetime dt_agendamento "início"
         datetime dt_fim
         varchar ds_procedimento
+        decimal vl_procedimento "opcional"
         enum fg_status "agendado | concluido | cancelado"
     }
 

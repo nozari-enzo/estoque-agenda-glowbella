@@ -71,7 +71,7 @@ switch (metodo()) {
             $entrada['qtd_duracao_min'] = (int) ((strtotime($atual['dt_fim']) - strtotime($atual['dt_agendamento'])) / 60);
         }
 
-        $campos = ['cd_cliente', 'dt_agendamento', 'ds_procedimento', 'fg_status'];
+        $campos = ['cd_cliente', 'dt_agendamento', 'ds_procedimento', 'vl_procedimento', 'fg_status'];
         if (!isset($entrada['qtd_duracao_min'])) {
             $campos[] = 'dt_fim';
         }

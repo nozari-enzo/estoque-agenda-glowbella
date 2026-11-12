@@ -5,7 +5,8 @@
 
 const AGENDA_COLUNAS = '
     a.cd_agenda, a.cd_cliente, c.nm_cliente, c.nu_telefone,
-    a.dt_agendamento, a.dt_fim, a.ds_procedimento, a.fg_status
+    a.dt_agendamento, a.dt_fim, a.ds_procedimento, a.vl_procedimento, a.fg_status,
+    TIMESTAMPDIFF(MINUTE, a.dt_agendamento, a.dt_fim) AS qtd_duracao_min
 ';
 
 /**
@@ -95,10 +96,10 @@ function buscar_conflitos(PDO $pdo, string $inicio, string $fim, ?int $ignorar =
 function inserir_agendamento(PDO $pdo, array $dados): int
 {
     $stmt = $pdo->prepare(
-        'INSERT INTO agenda (cd_cliente, dt_agendamento, dt_fim, ds_procedimento, fg_status)
-         VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO agenda (cd_cliente, dt_agendamento, dt_fim, ds_procedimento, vl_procedimento, fg_status)
+         VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$dados['cd_cliente'], $dados['dt_agendamento'], $dados['dt_fim'], $dados['ds_procedimento'], $dados['fg_status']]);
+    $stmt->execute([$dados['cd_cliente'], $dados['dt_agendamento'], $dados['dt_fim'], $dados['ds_procedimento'], $dados['vl_procedimento'], $dados['fg_status']]);
 
     return (int) $pdo->lastInsertId();
 }
@@ -106,10 +107,10 @@ function inserir_agendamento(PDO $pdo, array $dados): int
 function alterar_agendamento(PDO $pdo, int $cdAgenda, array $dados): void
 {
     $stmt = $pdo->prepare(
-        'UPDATE agenda SET cd_cliente = ?, dt_agendamento = ?, dt_fim = ?, ds_procedimento = ?, fg_status = ?
+        'UPDATE agenda SET cd_cliente = ?, dt_agendamento = ?, dt_fim = ?, ds_procedimento = ?, vl_procedimento = ?, fg_status = ?
          WHERE cd_agenda = ?'
     );
-    $stmt->execute([$dados['cd_cliente'], $dados['dt_agendamento'], $dados['dt_fim'], $dados['ds_procedimento'], $dados['fg_status'], $cdAgenda]);
+    $stmt->execute([$dados['cd_cliente'], $dados['dt_agendamento'], $dados['dt_fim'], $dados['ds_procedimento'], $dados['vl_procedimento'], $dados['fg_status'], $cdAgenda]);
 }
 
 function cancelar_agendamento(PDO $pdo, int $cdAgenda): void
@@ -122,6 +123,8 @@ function formatar_agendamento(array $agendamento): array
 {
     $agendamento['cd_agenda']  = (int) $agendamento['cd_agenda'];
     $agendamento['cd_cliente'] = (int) $agendamento['cd_cliente'];
+    $agendamento['qtd_duracao_min'] = (int) $agendamento['qtd_duracao_min'];
+    $agendamento['vl_procedimento'] = $agendamento['vl_procedimento'] === null ? null : (float) $agendamento['vl_procedimento'];
 
     return $agendamento;
 }

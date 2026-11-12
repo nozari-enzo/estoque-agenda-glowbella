@@ -145,7 +145,7 @@ Não crie arquivos vazios só para preencher essas pastas. Ao começar uma funci
 
 ## Regras da equipe
 
-1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `009_alteracao_exemplo.sql`, após a migration atual `008`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: crie a próxima migration numerada.
+1. **Banco de dados versionado.** Toda mudança no banco vira um arquivo `.sql` **numerado** em `database/migrations/` (ex.: `010_alteracao_exemplo.sql`, após a migration atual `009`). Ao puxar a `dev`, rode `database\migrar.php` para aplicar os arquivos novos. **Nunca edite um arquivo que já foi para a `dev`**: crie a próxima migration numerada.
 2. **SQL só em `app/` (repositories e services), sempre com PDO e prepared statements.** Nunca nas páginas, e nunca com variáveis direto no SQL (evita SQL Injection). As páginas chamam as funções de `app/repositories/<modulo>/`.
    ```php
    $stmt = $pdo->prepare('SELECT * FROM produto WHERE cd_produto = ?');

@@ -2,10 +2,26 @@
 require __DIR__ . '/../../app/bootstrap/init.php';
 require __DIR__ . '/../../app/repositories/agenda/agenda.php';
 
-// Controlo de navegação do Calendário
-$mes = $_GET['mes'] ?? date('m');
-$ano = $_GET['ano'] ?? date('Y');
-$diaFiltro = $_GET['dia'] ?? '';
+// Mês e ano do calendário (?mes=11&ano=2026). Valores inválidos voltam para o mês atual.
+$numeroDaUrl = fn (string $nome): int => is_string($_GET[$nome] ?? null) && ctype_digit($_GET[$nome]) ? (int) $_GET[$nome] : 0;
+$mes = $numeroDaUrl('mes');
+$ano = $numeroDaUrl('ano');
+if ($mes < 1 || $mes > 12) {
+    $mes = (int) date('n');
+}
+if ($ano < 2000 || $ano > 2100) {
+    $ano = (int) date('Y');
+}
+$mes = sprintf('%02d', $mes);
+
+// Dia clicado no calendário (?dia=2026-11-12). Só aceita uma data válida.
+$diaFiltro = is_string($_GET['dia'] ?? null) ? $_GET['dia'] : '';
+$dataDia = DateTime::createFromFormat('!Y-m-d', $diaFiltro);
+if (!$dataDia || $dataDia->format('Y-m-d') !== $diaFiltro) {
+    $diaFiltro = '';
+}
+
+$rotulosStatus = ['agendado' => 'Agendado', 'concluido' => 'Concluído', 'cancelado' => 'Cancelado'];
 
 // Cálculos para os botões de próximo mês / mês anterior
 $mesAnt = date('m', strtotime("$ano-$mes-01 -1 month"));
@@ -44,81 +60,6 @@ $menu = 'agendamentos';
 require __DIR__ . '/../../app/views/partials/header.php';
 ?>
 
-<style>
-/* Estilos Exclusivos do Calendário */
-.calendario-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background-color: #dee2e6;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-}
-.calendario-header {
-    background-color: #f8f9fa;
-    text-align: center;
-    font-weight: 600;
-    padding: 0.5rem;
-    font-size: 0.875rem;
-    color: #495057;
-}
-.calendario-dia {
-    background-color: #fff;
-    min-height: 120px;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-.calendario-dia:hover {
-    background-color: #fdfdfe;
-}
-.calendario-dia.vazio {
-    background-color: #f8f9fa;
-}
-.calendario-dia.hoje {
-    background-color: #fff4f4;
-}
-.calendario-numero {
-    text-align: right;
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-.calendario-numero a {
-    color: #212529;
-    text-decoration: none;
-    padding: 0.2rem 0.5rem;
-    border-radius: 50%;
-}
-.calendario-numero a:hover {
-    background-color: #e9ecef;
-}
-.calendario-numero a.ativo {
-    background-color: #d63384;
-    color: white;
-}
-.evento-badge {
-    font-size: 0.7rem;
-    padding: 0.25rem 0.4rem;
-    border-radius: 0.25rem;
-    color: #fff;
-    background-color: #d63384;
-    text-decoration: none;
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: left;
-}
-.evento-badge:hover {
-    filter: brightness(0.9);
-    color: #fff;
-}
-.evento-concluido { background-color: #198754; }
-.evento-cancelado { background-color: #6c757d; text-decoration: line-through; opacity: 0.7; }
-</style>
-
 <div class="cabecalho-pagina">
     <div>
         <h1>Agenda</h1>
@@ -138,14 +79,14 @@ require __DIR__ . '/../../app/views/partials/header.php';
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <h2 class="h4 mb-0">Visão Mensal</h2>
         <div class="d-flex align-items-center gap-2">
-            <a href="<?= url("agendamentos/?mes=$mesAnt&ano=$anoAnt") ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-left"></i></a>
-            <strong style="min-width: 140px; text-align: center;"><?= $mesesPt[$mes] ?> de <?= $ano ?></strong>
-            <a href="<?= url("agendamentos/?mes=$mesProx&ano=$anoProx") ?>" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-right"></i></a>
+            <a href="<?= url("agendamentos/?mes=$mesAnt&ano=$anoAnt") ?>" class="btn btn-sm btn-outline-secondary" aria-label="Mês anterior" title="Mês anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
+            <strong class="calendario-titulo"><?= $mesesPt[$mes] ?> de <?= $ano ?></strong>
+            <a href="<?= url("agendamentos/?mes=$mesProx&ano=$anoProx") ?>" class="btn btn-sm btn-outline-secondary" aria-label="Próximo mês" title="Próximo mês"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
         </div>
     </div>
 
     <div class="table-responsive">
-        <div class="calendario-grid" style="min-width: 750px;">
+        <div class="calendario-grid">
             <div class="calendario-header">Dom</div>
             <div class="calendario-header">Seg</div>
             <div class="calendario-header">Ter</div>
@@ -208,7 +149,7 @@ require __DIR__ . '/../../app/views/partials/header.php';
         <div>
             <h2 class="h4 mb-1" id="titulo-lista-agenda">Lista detalhada</h2>
             <p class="text-muted mb-0">
-                <?= $diaFiltro ? "A exibir apenas horários do dia " . date('d/m/Y', strtotime($diaFiltro)) . "." : "A exibir todos os horários." ?>
+                <?= $diaFiltro ? "Exibindo só os horários de " . date('d/m/Y', strtotime($diaFiltro)) . "." : "Exibindo todos os horários." ?>
             </p>
         </div>
         <?php if ($diaFiltro): ?>
@@ -261,9 +202,7 @@ require __DIR__ . '/../../app/views/partials/header.php';
                                 <?= $agenda['vl_procedimento'] ? 'R$ ' . number_format($agenda['vl_procedimento'], 2, ',', '.') : '<span class="text-muted">—</span>' ?>
                             </td>
                             <td data-label="Status">
-                                <span class="badge text-bg-<?= $agenda['fg_status'] === 'agendado' ? 'primary' : ($agenda['fg_status'] === 'concluido' ? 'success' : 'secondary') ?>">
-                                    <?= ucfirst(e($agenda['fg_status'])) ?>
-                                </span>
+                                <span class="badge status-<?= e($agenda['fg_status']) ?>"><?= e($rotulosStatus[$agenda['fg_status']] ?? $agenda['fg_status']) ?></span>
                             </td>
                             <td data-label="Ações" class="acoes">
                                 <div class="d-inline-flex flex-wrap gap-2">
