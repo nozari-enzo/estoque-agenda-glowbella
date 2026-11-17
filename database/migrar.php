@@ -37,6 +37,10 @@ try {
         DB_PASS,
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
+
+    // Mesmo fuso do sistema (APP_TIMEZONE), para as datas do seed (CURDATE(), NOW()) baterem com o PHP
+    date_default_timezone_set(APP_TIMEZONE);
+    $pdo->exec("SET time_zone = '" . date('P') . "'");
 } catch (PDOException $erro) {
     $dica = match ((int) $erro->getCode()) {
         1045    => 'Usuário ou senha do banco incorretos: confira DB_USER e DB_PASS em config/config.php.',
