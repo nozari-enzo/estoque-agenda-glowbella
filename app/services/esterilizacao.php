@@ -67,7 +67,7 @@ function validar_produtos_do_ciclo(PDO $pdo, mixed $lista, array &$erros): array
         }
 
         if (isset($produtos[$cdProduto])) {
-            $erros['produtos'] = "O produto $cdProduto aparece mais de uma vez. Some as quantidades numa linha só.";
+            $erros['produtos'] = "O produto da linha $numero já está na lista. Some as quantidades numa linha só.";
             return [];
         }
 
