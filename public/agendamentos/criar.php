@@ -1,7 +1,12 @@
 <?php
 require __DIR__ . '/../../app/bootstrap/init.php';
 
-$agendamento = []; // Vazio para o cadastro
+// Cadastro vazio. Vindo da tela da cliente (?cd_cliente=3), ela já vem escolhida.
+$agendamento = [];
+$clienteDaUrl = filter_var($_GET['cd_cliente'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if ($clienteDaUrl) {
+    $agendamento['cd_cliente'] = $clienteDaUrl;
+}
 
 $titulo = 'Novo agendamento';
 $menu = 'agendamentos';
