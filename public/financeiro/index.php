@@ -1,115 +1,131 @@
 <?php
 require __DIR__ . '/../../app/bootstrap/init.php';
+require __DIR__ . '/../../app/repositories/agenda/agenda.php';
+require __DIR__ . '/../../app/repositories/movimentacoes/movimentacoes.php';
+require __DIR__ . '/../../app/repositories/produtos/produtos.php';
+
+// Mês do relatório (?mes=11&ano=2026). Valores inválidos voltam para o mês atual.
+$numeroDaUrl = fn (string $nome): int => is_string($_GET[$nome] ?? null) && ctype_digit($_GET[$nome]) ? (int) $_GET[$nome] : 0;
+$mes = $numeroDaUrl('mes');
+$ano = $numeroDaUrl('ano');
+if ($mes < 1 || $mes > 12) {
+    $mes = (int) date('n');
+}
+if ($ano < 2000 || $ano > 2100) {
+    $ano = (int) date('Y');
+}
+
+$inicioMes = sprintf('%04d-%02d-01', $ano, $mes);
+$fimMes = date('Y-m-t', strtotime($inicioMes));
+$mesAnterior = strtotime("$inicioMes -1 month");
+$proximoMes = strtotime("$inicioMes +1 month");
+$nomesMeses = [1 => 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+$nomeMes = $nomesMeses[$mes] . ' de ' . $ano;
+
+// Receitas: agendamentos do mês com valor (concluído = recebido, agendado = previsto)
+$agendamentos = array_filter(
+    listar_agenda($pdo, ['de' => $inicioMes, 'ate' => $fimMes]),
+    fn ($a) => $a['fg_status'] !== 'cancelado'
+);
+
+// Gastos: entradas de estoque do mês (menos o estoque inicial do cadastro) × preço de compra do produto
+$precoCompra = array_column(listar_produtos($pdo, ['fg_status' => 'todos']), 'vl_compra', 'cd_produto');
+$compras = array_filter(
+    listar_movimentacoes($pdo, ['fg_tipo' => 'entrada', 'de' => $inicioMes, 'ate' => $fimMes, 'limite' => 500]),
+    fn ($m) => $m['ds_motivo'] !== 'Estoque inicial'
+);
+
+$lancamentos = [];
+$totais = ['recebido' => 0.0, 'previsto' => 0.0, 'compras' => 0.0];
+$porCliente = [];
+$semValor = 0;
+
+foreach ($agendamentos as $agendamento) {
+    if ($agendamento['vl_procedimento'] === null) {
+        $semValor++;
+        continue;
+    }
+
+    $recebido = $agendamento['fg_status'] === 'concluido';
+    $totais[$recebido ? 'recebido' : 'previsto'] += $agendamento['vl_procedimento'];
+
+    $cliente = &$porCliente[$agendamento['cd_cliente']];
+    $cliente['nome'] = $agendamento['nm_cliente'];
+    $cliente['atendimentos'] = ($cliente['atendimentos'] ?? 0) + 1;
+    $cliente['recebido'] = ($cliente['recebido'] ?? 0) + ($recebido ? $agendamento['vl_procedimento'] : 0);
+    $cliente['previsto'] = ($cliente['previsto'] ?? 0) + ($recebido ? 0 : $agendamento['vl_procedimento']);
+    unset($cliente);
+
+    $lancamentos[] = [
+        'data'      => $agendamento['dt_agendamento'],
+        'descricao' => $agendamento['ds_procedimento'],
+        'tipo'      => $recebido ? 'recebido' : 'previsto',
+        'vinculo'   => $agendamento['nm_cliente'],
+        'link'      => url('agendamentos/editar.php?id=' . $agendamento['cd_agenda']),
+        'valor'     => $agendamento['vl_procedimento'],
+    ];
+}
+
+foreach ($compras as $compra) {
+    $valor = $compra['qtd_movimentada'] * ($precoCompra[$compra['cd_produto']] ?? 0);
+    $totais['compras'] += $valor;
+
+    $lancamentos[] = [
+        'data'      => $compra['dt_movimentacao'],
+        'descricao' => $compra['qtd_movimentada'] . '× ' . $compra['nm_produto'] . ($compra['ds_motivo'] ? ' · ' . $compra['ds_motivo'] : ''),
+        'tipo'      => 'compra',
+        'vinculo'   => 'Entrada de estoque',
+        'link'      => url('estoque/?produto=' . $compra['cd_produto'] . '#historico'),
+        'valor'     => $valor,
+    ];
+}
+
+usort($lancamentos, fn ($a, $b) => strcmp($b['data'], $a['data']));
+uasort($porCliente, fn ($a, $b) => ($b['recebido'] + $b['previsto']) <=> ($a['recebido'] + $a['previsto']));
+
+$saldo = $totais['recebido'] - $totais['compras'];
+$tipos = [
+    'recebido' => ['Atendimento concluído', 'text-bg-primary'],
+    'previsto' => ['Atendimento agendado', 'status-agendado'],
+    'compra'   => ['Compra', 'text-bg-secondary'],
+];
+$moeda = fn (float $valor): string => 'R$ ' . number_format($valor, 2, ',', '.');
 
 $titulo = 'Financeiro';
 $menu = 'financeiro';
 require __DIR__ . '/../../app/views/partials/header.php';
-
-// Valores demonstrativos: a gravação e a integração real dependem do backend.
-$movimentosDemo = [
-    [
-        'data' => '04/11/2026',
-        'tipo' => 'atendimento',
-        'tipo_rotulo' => 'Atendimento',
-        'descricao' => 'Piercing Humanizado',
-        'vinculo' => 'AG-108 · Ana C.',
-        'natureza' => 'entrada',
-        'valor_centavos' => 11900,
-    ],
-    [
-        'data' => '04/11/2026',
-        'tipo' => 'joia',
-        'tipo_rotulo' => 'Venda de joia',
-        'descricao' => 'Brinco argola lisa · aço cirúrgico',
-        'vinculo' => 'AG-108 · Ana C.',
-        'natureza' => 'entrada',
-        'valor_centavos' => 8900,
-    ],
-    [
-        'data' => '03/11/2026',
-        'tipo' => 'atendimento',
-        'tipo_rotulo' => 'Atendimento',
-        'descricao' => 'Furo Humanizado Adulto',
-        'vinculo' => 'AG-107 · Luiza M.',
-        'natureza' => 'entrada',
-        'valor_centavos' => 14900,
-    ],
-    [
-        'data' => '03/11/2026',
-        'tipo' => 'joia',
-        'tipo_rotulo' => 'Venda de joia',
-        'descricao' => 'Brinco ponto de luz',
-        'vinculo' => 'AG-107 · Luiza M.',
-        'natureza' => 'entrada',
-        'valor_centavos' => 6900,
-    ],
-    [
-        'data' => '02/11/2026',
-        'tipo' => 'atendimento',
-        'tipo_rotulo' => 'Atendimento',
-        'descricao' => 'Sessão de Laserterapia',
-        'vinculo' => 'AG-106 · Bia R.',
-        'natureza' => 'entrada',
-        'valor_centavos' => 6000,
-    ],
-    [
-        'data' => '01/11/2026',
-        'tipo' => 'despesa',
-        'tipo_rotulo' => 'Compra',
-        'descricao' => 'Reposição de luvas estéreis',
-        'vinculo' => 'Compra de estoque',
-        'natureza' => 'saida',
-        'valor_centavos' => 9600,
-    ],
-    [
-        'data' => '01/11/2026',
-        'tipo' => 'despesa',
-        'tipo_rotulo' => 'Compra',
-        'descricao' => 'Reposição de gazes estéreis',
-        'vinculo' => 'Compra de estoque',
-        'natureza' => 'saida',
-        'valor_centavos' => 4500,
-    ],
-];
-
-$totaisCentavos = ['atendimento' => 0, 'joia' => 0, 'despesa' => 0];
-foreach ($movimentosDemo as $movimento) {
-    $totaisCentavos[$movimento['tipo']] += $movimento['valor_centavos'];
-}
-$totaisCentavos['saldo'] = $totaisCentavos['atendimento'] + $totaisCentavos['joia'] - $totaisCentavos['despesa'];
-
-$formatarMoeda = static fn (int $centavos): string => 'R$ ' . number_format($centavos / 100, 2, ',', '.');
 ?>
 
 <div class="cabecalho-pagina">
     <div>
         <h1>Financeiro</h1>
-        <p>Receitas de atendimentos e joias, junto aos gastos de compras.</p>
+        <p>Receitas dos atendimentos da agenda e gastos com compras de estoque.</p>
     </div>
     <a class="btn btn-outline-primary" href="<?= url('agendamentos/') ?>">
         <i class="bi bi-calendar-heart" aria-hidden="true"></i> Abrir Agenda
     </a>
 </div>
 
-<div class="alert alert-info d-flex gap-2 align-items-start" role="status">
-    <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
-    <div><strong>Protótipo visual.</strong> Os valores são demonstrativos e não são salvos. Na versão final, o serviço entra como receita ao concluir o atendimento; a joia fica em um lançamento separado no mesmo agendamento. Compras entram como saídas.</div>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <a href="<?= url('financeiro/?mes=' . date('n', $mesAnterior) . '&ano=' . date('Y', $mesAnterior)) ?>" class="btn btn-sm btn-outline-secondary" aria-label="Mês anterior" title="Mês anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
+    <strong class="calendario-titulo"><?= e($nomeMes) ?></strong>
+    <a href="<?= url('financeiro/?mes=' . date('n', $proximoMes) . '&ano=' . date('Y', $proximoMes)) ?>" class="btn btn-sm btn-outline-secondary" aria-label="Próximo mês" title="Próximo mês"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
 </div>
 
-<section class="row g-3 mb-4" aria-label="Resumo financeiro demonstrativo de novembro de 2026">
+<section class="row g-3 mb-4" aria-label="Resumo financeiro de <?= e($nomeMes) ?>">
     <div class="col-12 col-sm-6 col-xl-3">
         <article class="card-glow resumo-financeiro h-100 p-3">
             <div class="d-flex align-items-center gap-3">
                 <span class="icone-circulo"><i class="bi bi-heart-pulse" aria-hidden="true"></i></span>
-                <div><p class="text-muted small mb-1">Procedimentos</p><strong class="fs-5"><?= e($formatarMoeda($totaisCentavos['atendimento'])) ?></strong></div>
+                <div><p class="text-muted small mb-1">Recebido (concluídos)</p><strong class="fs-5" data-total="recebido"><?= $moeda($totais['recebido']) ?></strong></div>
             </div>
         </article>
     </div>
     <div class="col-12 col-sm-6 col-xl-3">
         <article class="card-glow resumo-financeiro h-100 p-3">
             <div class="d-flex align-items-center gap-3">
-                <span class="icone-circulo"><i class="bi bi-gem" aria-hidden="true"></i></span>
-                <div><p class="text-muted small mb-1">Venda de joias</p><strong class="fs-5"><?= e($formatarMoeda($totaisCentavos['joia'])) ?></strong></div>
+                <span class="icone-circulo"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
+                <div><p class="text-muted small mb-1">Previsto (agendados)</p><strong class="fs-5" data-total="previsto"><?= $moeda($totais['previsto']) ?></strong></div>
             </div>
         </article>
     </div>
@@ -117,7 +133,7 @@ $formatarMoeda = static fn (int $centavos): string => 'R$ ' . number_format($cen
         <article class="card-glow resumo-financeiro h-100 p-3">
             <div class="d-flex align-items-center gap-3">
                 <span class="icone-circulo"><i class="bi bi-cart-dash" aria-hidden="true"></i></span>
-                <div><p class="text-muted small mb-1">Gastos com compras</p><strong class="fs-5"><?= e($formatarMoeda($totaisCentavos['despesa'])) ?></strong></div>
+                <div><p class="text-muted small mb-1">Gastos com compras*</p><strong class="fs-5" data-total="compras"><?= $moeda($totais['compras']) ?></strong></div>
             </div>
         </article>
     </div>
@@ -125,89 +141,126 @@ $formatarMoeda = static fn (int $centavos): string => 'R$ ' . number_format($cen
         <article class="card-glow resumo-financeiro h-100 p-3">
             <div class="d-flex align-items-center gap-3">
                 <span class="icone-circulo"><i class="bi bi-wallet2" aria-hidden="true"></i></span>
-                <div><p class="text-muted small mb-1">Saldo parcial</p><strong class="fs-5"><?= e($formatarMoeda($totaisCentavos['saldo'])) ?></strong></div>
+                <div><p class="text-muted small mb-1">Saldo (recebido − compras)</p><strong class="fs-5 <?= $saldo < 0 ? 'text-danger' : '' ?>" data-total="saldo"><?= $moeda($saldo) ?></strong></div>
             </div>
         </article>
     </div>
 </section>
 
-<section class="card-glow p-3 p-lg-4" aria-labelledby="titulo-movimentacoes" data-lista-filtro data-busca="busca-financeiro" data-tipo="tipo-financeiro">
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-        <div>
-            <h2 class="h4 mb-1" id="titulo-movimentacoes">Movimentações demonstrativas</h2>
-            <p class="text-muted mb-0">Novembro de 2026 · serviços, joias e compras de estoque.</p>
-        </div>
+<?php if ($semValor): ?>
+    <div class="alert alert-warning" role="status">
+        <?= $semValor ?> <?= $semValor === 1 ? 'atendimento do mês está' : 'atendimentos do mês estão' ?> sem valor e não <?= $semValor === 1 ? 'entra' : 'entram' ?> nos totais.
+        Informe o valor do procedimento ao editar o agendamento.
+    </div>
+<?php endif; ?>
+
+<section class="card-glow p-3 p-lg-4 mb-4" aria-labelledby="titulo-lancamentos" data-lista-filtro data-busca="busca-financeiro" data-tipo="tipo-financeiro">
+    <div class="mb-3">
+        <h2 class="h4 mb-1" id="titulo-lancamentos">Lançamentos de <?= e($nomeMes) ?></h2>
+        <p class="text-muted mb-0">Atendimentos da agenda (por cliente e dia) e compras registradas no estoque.</p>
     </div>
 
-    <div class="row g-2 mb-3">
-        <div class="col-12 col-lg-7">
-            <label class="visually-hidden" for="busca-financeiro">Buscar movimentação</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
-                <input class="form-control" id="busca-financeiro" type="search" placeholder="Buscar descrição ou atendimento">
+    <?php if (!$lancamentos): ?>
+        <div class="estado-vazio">
+            <i class="bi bi-cash-coin" aria-hidden="true"></i>
+            <h2>Nenhum lançamento neste mês</h2>
+            <p class="mb-0">Os atendimentos com valor e as compras de estoque aparecem aqui.</p>
+        </div>
+    <?php else: ?>
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-lg-7">
+                <label class="visually-hidden" for="busca-financeiro">Buscar lançamento</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+                    <input class="form-control" id="busca-financeiro" type="search" placeholder="Buscar cliente, procedimento ou produto">
+                </div>
+            </div>
+            <div class="col-12 col-lg-5">
+                <label class="visually-hidden" for="tipo-financeiro">Filtrar por tipo</label>
+                <select class="form-select" id="tipo-financeiro">
+                    <option value="">Todos os lançamentos</option>
+                    <?php foreach ($tipos as $chave => [$rotulo]): ?>
+                        <option value="<?= $chave ?>"><?= $rotulo ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
         </div>
-        <div class="col-12 col-lg-5">
-            <label class="visually-hidden" for="tipo-financeiro">Filtrar movimentações por tipo</label>
-            <select class="form-select" id="tipo-financeiro">
-                <option value="">Todas as movimentações</option>
-                <option value="atendimento">Procedimentos</option>
-                <option value="joia">Venda de joias</option>
-                <option value="despesa">Gastos com compras</option>
-            </select>
-        </div>
-    </div>
 
-    <p class="small text-muted" aria-live="polite" data-contador-resultados></p>
+        <p class="small text-muted" aria-live="polite" data-contador-resultados></p>
 
-    <div class="table-responsive tabela-celular-wrapper">
-        <table class="table table-hover tabela-glow tabela-celular-responsive tabela-financeiro mb-0">
-            <caption class="visually-hidden">Movimentações financeiras demonstrativas relacionadas a atendimentos e compras.</caption>
-            <colgroup>
-                <col class="col-data">
-                <col class="col-lancamento">
-                <col class="col-tipo">
-                <col class="col-vinculo">
-                <col class="col-valor">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th scope="col">Data</th>
-                    <th scope="col">Lançamento</th>
-                    <th scope="col">Tipo</th>
-                    <th scope="col">Agenda / origem</th>
-                    <th scope="col" class="text-end">Valor</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($movimentosDemo as $movimento): ?>
-                    <?php $ehSaida = $movimento['natureza'] === 'saida'; ?>
-                    <tr data-item-lista data-tipo-item="<?= e($movimento['tipo']) ?>">
-                        <td data-label="Data"><?= e($movimento['data']) ?></td>
-                        <td data-label="Lançamento"><strong><?= e($movimento['descricao']) ?></strong></td>
-                        <td data-label="Tipo"><span class="badge <?= $ehSaida ? 'text-bg-secondary' : 'text-bg-primary' ?>"><?= e($movimento['tipo_rotulo']) ?></span></td>
-                        <td data-label="Agenda / origem">
-                            <?php if ($movimento['tipo'] === 'despesa'): ?>
-                                <?= e($movimento['vinculo']) ?>
-                            <?php else: ?>
-                                <a href="<?= url('agendamentos/') ?>" aria-label="Abrir Agenda para o atendimento <?= e($movimento['vinculo']) ?>">
-                                    <?= e($movimento['vinculo']) ?> <i class="bi bi-box-arrow-up-right small" aria-hidden="true"></i>
-                                </a>
-                            <?php endif; ?>
-                        </td>
-                        <td data-label="Valor" class="text-md-end fw-semibold <?= $ehSaida ? 'text-danger' : 'text-success' ?>">
-                            <?= $ehSaida ? '−' : '+' ?><?= e($formatarMoeda($movimento['valor_centavos'])) ?>
-                        </td>
+        <div class="table-responsive tabela-celular-wrapper">
+            <table class="table table-hover tabela-glow tabela-celular-responsive tabela-financeiro mb-0">
+                <caption class="visually-hidden">Lançamentos financeiros do mês.</caption>
+                <colgroup>
+                    <col class="col-data">
+                    <col class="col-lancamento">
+                    <col class="col-tipo">
+                    <col class="col-vinculo">
+                    <col class="col-valor">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">Data</th>
+                        <th scope="col">Lançamento</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Cliente / origem</th>
+                        <th scope="col" class="text-end">Valor</th>
                     </tr>
-                <?php endforeach; ?>
-                <tr data-sem-resultados class="d-none">
-                    <td colspan="5" class="text-center text-muted py-4">Nenhuma movimentação corresponde aos filtros.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    <?php foreach ($lancamentos as $lancamento): ?>
+                        <?php [$rotuloTipo, $classeTipo] = $tipos[$lancamento['tipo']]; $saida = $lancamento['tipo'] === 'compra'; ?>
+                        <tr data-item-lista data-tipo-item="<?= $lancamento['tipo'] ?>">
+                            <td data-label="Data"><?= e(date('d/m/Y', strtotime($lancamento['data']))) ?></td>
+                            <td data-label="Lançamento"><?= e($lancamento['descricao']) ?></td>
+                            <td data-label="Tipo"><span class="badge <?= $classeTipo ?>"><?= $rotuloTipo ?></span></td>
+                            <td data-label="Cliente / origem"><a href="<?= e($lancamento['link']) ?>"><?= e($lancamento['vinculo']) ?></a></td>
+                            <td data-label="Valor" class="text-md-end text-nowrap fw-semibold <?= $saida ? 'text-danger' : ($lancamento['tipo'] === 'recebido' ? 'text-success' : 'text-muted') ?>">
+                                <?= ($saida ? '− ' : '+ ') . $moeda($lancamento['valor']) ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr data-sem-resultados class="d-none">
+                        <td colspan="5" class="text-center text-muted py-4">Nenhum lançamento corresponde aos filtros.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
 </section>
 
-<p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle" aria-hidden="true"></i> O preço do procedimento e o preço de venda da joia ficam em linhas separadas, ligados ao mesmo atendimento. As compras aparecem como saídas; este saldo parcial não inclui outras despesas ou taxas.</p>
+<?php if ($porCliente): ?>
+    <section class="card-glow p-3 p-lg-4" aria-labelledby="titulo-por-cliente">
+        <h2 class="h4 mb-1" id="titulo-por-cliente">Por cliente</h2>
+        <p class="text-muted mb-3">Quanto cada cliente gerou em <?= e($nomeMes) ?>.</p>
+        <div class="table-responsive tabela-celular-wrapper">
+            <table class="table tabela-glow tabela-celular-responsive mb-0">
+                <caption class="visually-hidden">Totais por cliente no mês.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Cliente</th>
+                        <th scope="col" class="text-end">Atendimentos</th>
+                        <th scope="col" class="text-end">Recebido</th>
+                        <th scope="col" class="text-end">Previsto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($porCliente as $cdCliente => $cliente): ?>
+                        <tr>
+                            <td data-label="Cliente"><a href="<?= url('clientes/editar.php?id=' . $cdCliente) ?>"><?= e($cliente['nome']) ?></a></td>
+                            <td data-label="Atendimentos" class="text-md-end"><?= $cliente['atendimentos'] ?></td>
+                            <td data-label="Recebido" class="text-md-end text-nowrap"><?= $moeda($cliente['recebido']) ?></td>
+                            <td data-label="Previsto" class="text-md-end text-nowrap"><?= $moeda($cliente['previsto']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+<?php endif; ?>
+
+<p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle" aria-hidden="true"></i>
+    * Gasto estimado: quantidade de cada entrada de estoque × o preço de compra cadastrado no produto (o estoque inicial do cadastro não entra).
+    O valor de cada atendimento vem do campo "Valor do procedimento" da agenda. Outras despesas e taxas não estão incluídas.</p>
 
 <?php require __DIR__ . '/../../app/views/partials/footer.php'; ?>
