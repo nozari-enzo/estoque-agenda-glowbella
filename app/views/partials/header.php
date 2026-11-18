@@ -8,18 +8,28 @@
  *   $menu = 'produtos';   // inicio, produtos, estoque, esterilizacao, clientes ou agendamentos
  *   require __DIR__ . '/../../app/views/partials/header.php';
  */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['cd_usuario'])) {
+    header('Location: ' . url('login.php'));
+    exit;
+}
+
+
 $tituloPagina = isset($titulo) ? $titulo . ' | GlowBella' : 'GlowBella';
 $menuAtivo = $menu ?? '';
 
 // Itens do menu: chave => [texto, ícone do Bootstrap Icons, caminho]
 $itensMenu = [
-    'inicio'       => ['Início', 'bi-house-heart', ''],
-    'agendamentos' => ['Agenda', 'bi-calendar-heart', 'agendamentos/'],
-    'clientes'     => ['Clientes', 'bi-people', 'clientes/'],
-    'produtos'     => ['Produtos', 'bi-gem', 'produtos/'],
-    'estoque'      => ['Estoque', 'bi-box-seam', 'estoque/'],
+    'inicio'        => ['Início', 'bi-house-heart', ''],
+    'agendamentos'  => ['Agenda', 'bi-calendar-heart', 'agendamentos/'],
+    'clientes'      => ['Clientes', 'bi-people', 'clientes/'],
+    'produtos'      => ['Produtos', 'bi-gem', 'produtos/'],
+    'estoque'       => ['Estoque', 'bi-box-seam', 'estoque/'],
     'esterilizacao' => ['Esterilização', 'bi-shield-check', 'esterilizacao/'],
-    'financeiro'   => ['Financeiro', 'bi-cash-coin', 'financeiro/'],
+    'financeiro'    => ['Financeiro', 'bi-cash-coin', 'financeiro/'],
 ];
 ?>
 <!DOCTYPE html>
@@ -71,8 +81,18 @@ $itensMenu = [
             </nav>
 
             <div class="menu-rodape">
-                <!-- Nome do usuário logado e botão "Sair" entram aqui na US13 (Login) -->
-                Estoque &amp; Agenda
+                <?php if (isset($_SESSION['cd_usuario'])): ?>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="small text-truncate" title="<?= e($_SESSION['nm_usuario'] ?? '') ?>">
+                            <i class="bi bi-person-circle"></i> <?= e($_SESSION['nm_usuario'] ?? 'Usuária') ?>
+                        </div>
+                        <a href="<?= url('logout.php') ?>" class="btn btn-outline-light btn-sm w-100">
+                            <i class="bi bi-box-arrow-right"></i> Sair
+                        </a>
+                    </div>
+                <?php else: ?>
+                    Estoque &amp; Agenda
+                <?php endif; ?>
             </div>
         </div>
     </aside>
