@@ -1,26 +1,18 @@
 <?php
+/**
+ * Sair. Recebe o POST do botão "Sair" do menu (com token CSRF, para que um link
+ * de outro site não consiga deslogar a pessoa).
+ */
 require __DIR__ . '/../app/bootstrap/init.php';
+require_once __DIR__ . '/../app/services/auth.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ' . url());
+    exit;
 }
 
-$_SESSION = [];
-
-if (ini_get('session.use_cookies')) {
-    $params = session_get_cookie_params();
-    setcookie(
-        session_name(),
-        '',
-        time() - 42000,
-        $params['path'],
-        $params['domain'],
-        $params['secure'],
-        $params['httponly']
-    );
-}
-
-session_destroy();
+csrf_validar();
+fazer_logout();
 
 header('Location: ' . url('login.php'));
 exit;

@@ -52,7 +52,8 @@ Isso cria o banco `glowbella`, todas as tabelas e os dados de exemplo.
 - **Sempre que puxar a `dev`**, rode de novo `C:\xampp\php\php.exe database\migrar.php`. Ele só executa as migrations novas.
 - Para **apagar tudo e recriar do zero**: `C:\xampp\php\php.exe database\migrar.php --reset --seed`
 - Se aparecer **"Este banco foi criado com migrations que não existem mais"**, a estrutura do banco mudou (ex.: refatoração do banco). Recrie com o comando `--reset --seed` acima. Isso apaga os dados locais de teste.
-- **Login de teste** (criado pelo seed): `admin@glowbella.com` / `glowbella123`
+- **Login de teste** (criado pelo seed): `admin@glowbella.com` / `glowbella123`. Entre em http://localhost/estoque-agenda-glowbella/public/login.php
+- Para **criar um usuário** (ou trocar a senha de um que já existe): `C:\xampp\php\php.exe database\criar_usuario.php "Nome" email@exemplo.com`. A senha é pedida no terminal.
 
 <details>
 <summary>Alternativa sem terminal (phpMyAdmin)</summary>

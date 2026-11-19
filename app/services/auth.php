@@ -1,12 +1,13 @@
 <?php
 /**
- * Login e sessão. Usado pela API (public/api/auth.php) e pode ser usado
- * também pelo formulário de login tradicional (ex.: valida_login.php):
+ * Login e sessão. Usado pela tela de login (public/login.php), pela API
+ * (public/api/auth.php) e pelo cabeçalho das páginas:
  *
- *   require_once __DIR__ . '/../app/services/auth.php';
  *   if (fazer_login($pdo, $_POST['ds_email'] ?? '', $_POST['ds_senha'] ?? '')) { ... }
+ *   $usuario = exigir_login_pagina();   // manda para o login quem não estiver logado
  *
  * Quem está logado fica em $_SESSION['usuario'] = ['cd_usuario' => ..., 'nm_usuario' => ...].
+ * Use SEMPRE essas funções: as APIs (exigir_login()) também olham essa mesma chave.
  */
 
 /**
@@ -42,6 +43,22 @@ function fazer_login(PDO $pdo, string $email, string $senha): ?array
 function usuario_logado(): ?array
 {
     return $_SESSION['usuario'] ?? null;
+}
+
+/**
+ * Para páginas (não APIs): quem não estiver logado vai para a tela de login.
+ * Já é chamada pelo app/views/partials/header.php, então toda página com o menu está protegida.
+ */
+function exigir_login_pagina(): array
+{
+    $usuario = usuario_logado();
+
+    if ($usuario === null) {
+        header('Location: ' . url('login.php'));
+        exit;
+    }
+
+    return $usuario;
 }
 
 /** Encerra a sessão. */
