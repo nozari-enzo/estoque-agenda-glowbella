@@ -4,7 +4,7 @@
  *
  * Use SEMPRE prepared statements (nunca coloque variáveis direto no SQL):
  *
- *   $stmt = $pdo->prepare('SELECT * FROM produtos WHERE id = ?');
+ *   $stmt = $pdo->prepare('SELECT * FROM produto WHERE cd_produto = ?');
  *   $stmt->execute([$id]);
  *   $produto = $stmt->fetch();
  */
@@ -22,6 +22,10 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // resultados como array associativo
         PDO::ATTR_EMULATE_PREPARES   => false,                  // prepared statements reais
     ]);
+
+    // O MySQL passa a usar o mesmo fuso do PHP (APP_TIMEZONE). Sem isso, NOW() e CURDATE()
+    // podem estar em outro dia que o date() do PHP (comum em hospedagem, onde o MySQL roda em UTC).
+    $pdo->exec("SET time_zone = '" . date('P') . "'");
 } catch (PDOException $erro) {
     http_response_code(500);
 

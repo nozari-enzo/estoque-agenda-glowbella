@@ -8,17 +8,23 @@
  *   $menu = 'produtos';   // inicio, produtos, estoque, esterilizacao, clientes ou agendamentos
  *   require __DIR__ . '/../../app/views/partials/header.php';
  */
+require_once __DIR__ . '/../../services/auth.php';
+
+// Toda página com o menu exige login (sem login, vai para public/login.php)
+$usuarioLogado = exigir_login_pagina();
+
 $tituloPagina = isset($titulo) ? $titulo . ' | GlowBella' : 'GlowBella';
 $menuAtivo = $menu ?? '';
 
 // Itens do menu: chave => [texto, ícone do Bootstrap Icons, caminho]
 $itensMenu = [
-    'inicio'       => ['Início', 'bi-house-heart', ''],
-    'agendamentos' => ['Agenda', 'bi-calendar-heart', 'agendamentos/'],
-    'clientes'     => ['Clientes', 'bi-people', 'clientes/'],
-    'produtos'     => ['Produtos', 'bi-gem', 'produtos/'],
-    'estoque'      => ['Estoque', 'bi-box-seam', 'estoque/'],
+    'inicio'        => ['Início', 'bi-house-heart', ''],
+    'agendamentos'  => ['Agenda', 'bi-calendar-heart', 'agendamentos/'],
+    'clientes'      => ['Clientes', 'bi-people', 'clientes/'],
+    'produtos'      => ['Produtos', 'bi-gem', 'produtos/'],
+    'estoque'       => ['Estoque', 'bi-box-seam', 'estoque/'],
     'esterilizacao' => ['Esterilização', 'bi-shield-check', 'esterilizacao/'],
+    'financeiro'    => ['Financeiro', 'bi-cash-coin', 'financeiro/'],
 ];
 ?>
 <!DOCTYPE html>
@@ -27,6 +33,10 @@ $itensMenu = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($tituloPagina) ?></title>
+
+    <!-- Usados pela função glowApi() de public/assets/js/app.js -->
+    <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+    <meta name="base-url" content="<?= e(url()) ?>">
 
     <!-- Fontes: Playfair Display (títulos) e Inter (textos) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,8 +76,17 @@ $itensMenu = [
             </nav>
 
             <div class="menu-rodape">
-                <!-- Nome do usuário logado e botão "Sair" entram aqui na US13 (Login) -->
-                Estoque &amp; Agenda
+                <div class="d-flex flex-column gap-2">
+                    <div class="small text-truncate" title="<?= e($usuarioLogado['nm_usuario']) ?>">
+                        <i class="bi bi-person-circle"></i> <?= e($usuarioLogado['nm_usuario']) ?>
+                    </div>
+                    <form method="post" action="<?= url('logout.php') ?>">
+                        <?= csrf_campo() ?>
+                        <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                            <i class="bi bi-box-arrow-right"></i> Sair
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </aside>

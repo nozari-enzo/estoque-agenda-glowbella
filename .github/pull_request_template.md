@@ -22,7 +22,8 @@
 - [ ] Testei no meu XAMPP e está funcionando
 - [ ] Usei prepared statements em todas as consultas SQL
 - [ ] Usei `e()` em todos os dados exibidos na tela
-- [ ] Formulários POST têm `csrf_campo()` e `csrf_validar()`
+- [ ] Tela: lista pelo repository e gravação pela API, seguindo o `docs/front.md` (sem SQL na página)
+- [ ] Formulários usam `glowFormulario()` / `glowApi()` (ou, se fizerem POST para a própria página, têm `csrf_campo()` e `csrf_validar()`)
 - [ ] Segui o Guia de componentes (`public/componentes.php`)
 - [ ] Não subi o `config/config.php`
 

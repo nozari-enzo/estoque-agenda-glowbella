@@ -15,3 +15,7 @@ desktop.ini
 
 # Logs
 *.log
+
+# Ferramentas locais de desenvolvimento e capturas visuais
+node_modules/
+/artifacts/

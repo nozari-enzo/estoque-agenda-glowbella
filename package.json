@@ -1,0 +1,13 @@
+{
+  "name": "glowbella-visual-checks",
+  "private": true,
+  "description": "Ferramentas locais de conferência visual do front-end GlowBella",
+  "scripts": {
+    "visual": "node scripts/visual-check.cjs",
+    "visual:esterilizacao": "npm run visual -- esterilizacao/",
+    "visual:all": "npm run visual -- index.php produtos/ esterilizacao/ financeiro/ estoque/ produtos/criar.php agendamentos/"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}
