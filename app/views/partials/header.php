@@ -8,15 +8,10 @@
  *   $menu = 'produtos';   // inicio, produtos, estoque, esterilizacao, clientes ou agendamentos
  *   require __DIR__ . '/../../app/views/partials/header.php';
  */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../services/auth.php';
 
-if (!isset($_SESSION['cd_usuario'])) {
-    header('Location: ' . url('login.php'));
-    exit;
-}
-
+// Toda página com o menu exige login (sem login, vai para public/login.php)
+$usuarioLogado = exigir_login_pagina();
 
 $tituloPagina = isset($titulo) ? $titulo . ' | GlowBella' : 'GlowBella';
 $menuAtivo = $menu ?? '';
@@ -81,18 +76,17 @@ $itensMenu = [
             </nav>
 
             <div class="menu-rodape">
-                <?php if (isset($_SESSION['cd_usuario'])): ?>
-                    <div class="d-flex flex-column gap-2">
-                        <div class="small text-truncate" title="<?= e($_SESSION['nm_usuario'] ?? '') ?>">
-                            <i class="bi bi-person-circle"></i> <?= e($_SESSION['nm_usuario'] ?? 'Usuária') ?>
-                        </div>
-                        <a href="<?= url('logout.php') ?>" class="btn btn-outline-light btn-sm w-100">
-                            <i class="bi bi-box-arrow-right"></i> Sair
-                        </a>
+                <div class="d-flex flex-column gap-2">
+                    <div class="small text-truncate" title="<?= e($usuarioLogado['nm_usuario']) ?>">
+                        <i class="bi bi-person-circle"></i> <?= e($usuarioLogado['nm_usuario']) ?>
                     </div>
-                <?php else: ?>
-                    Estoque &amp; Agenda
-                <?php endif; ?>
+                    <form method="post" action="<?= url('logout.php') ?>">
+                        <?= csrf_campo() ?>
+                        <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                            <i class="bi bi-box-arrow-right"></i> Sair
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </aside>

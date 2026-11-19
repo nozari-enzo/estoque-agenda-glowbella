@@ -428,4 +428,4 @@ Os filtros de cada `listar_...` são os mesmos da API (veja a documentação de 
 - [ ] Conferi no celular (sem rolagem para o lado)
 - [ ] O bloco "Em construção" da página provisória foi apagado
 
-> **Login:** por enquanto as páginas abrem sem login (só as APIs exigem). Quando a tela de login ficar pronta, cada página vai ganhar uma linha de proteção logo depois do `init.php`. Este guia será atualizado.
+> **Login:** toda página que inclui o `header.php` já exige login (ele chama `exigir_login_pagina()`, que manda para `login.php` quem não entrou). Não precisa colocar nada na página. Quem está logado: `usuario_logado()` (ou `$usuarioLogado` depois do header). Nunca leia ou grave `$_SESSION` direto para login: use as funções de `app/services/auth.php`, porque as APIs olham a mesma chave.

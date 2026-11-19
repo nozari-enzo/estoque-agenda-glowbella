@@ -952,3 +952,24 @@ h1, h2, h3, .titulo-elegante {
         content: none;
     }
 }
+
+/* Tela de login */
+.login-pagina {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.login-cartao {
+    width: 100%;
+    max-width: 400px;
+    border: none;
+}
+
+.login-marca {
+    font-family: var(--glow-fonte-titulo);
+    font-size: 1.6rem;
+    color: var(--glow-primaria);
+}

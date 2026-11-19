@@ -1,103 +1,90 @@
 <?php
+/**
+ * Tela de login. Usa fazer_login() de app/services/auth.php, a mesma regra da API
+ * (public/api/auth.php), então quem entra por aqui também consegue usar as APIs.
+ */
 require __DIR__ . '/../app/bootstrap/init.php';
+require_once __DIR__ . '/../app/services/auth.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Se já estiver logado, redireciona direto para a página inicial
-if (isset($_SESSION['cd_usuario'])) {
-    header('Location: index.php');
+// Já está logada: vai direto para o início
+if (usuario_logado() !== null) {
+    header('Location: ' . url());
     exit;
 }
 
 $erro = null;
+$email = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $login = trim($_POST['login'] ?? '');
-    $senha = $_POST['senha'] ?? '';
+    $email = trim((string) ($_POST['ds_email'] ?? ''));
+    $senha = (string) ($_POST['ds_senha'] ?? '');
+    $token = $_POST['csrf_token'] ?? '';
 
-    if ($login === '' || $senha === '') {
-        $erro = 'Por favor, preencha o e-mail ou nome de usuário e a senha.';
+    if (!is_string($token) || !hash_equals(csrf_token(), $token)) {
+        $erro = 'A página ficou muito tempo aberta. Tente entrar de novo.';
+    } elseif ($email === '' || $senha === '') {
+        $erro = 'Preencha o e-mail e a senha.';
     } else {
         try {
-            $sql = 'SELECT cd_usuario, nm_usuario, ds_email, ds_senha 
-                    FROM admin 
-                    WHERE ds_email = :email OR nm_usuario = :nome 
-                    LIMIT 1';
-            
-            $consulta = $pdo->prepare($sql);
-            $consulta->bindValue(':email', $login);
-            $consulta->bindValue(':nome', $login);
-            $consulta->execute();
-            $usuario = $consulta->fetch(PDO::FETCH_ASSOC);
-
-            if ($usuario && password_verify($senha, $usuario['ds_senha'])) {
-                session_regenerate_id(true);
-
-                $_SESSION['cd_usuario'] = $usuario['cd_usuario'];
-                $_SESSION['nm_usuario'] = $usuario['nm_usuario'];
-                $_SESSION['ds_email']   = $usuario['ds_email'];
-
-                header('Location: index.php');
+            if (fazer_login($pdo, $email, $senha) !== null) {
+                header('Location: ' . url());
                 exit;
-            } else {
-                $erro = 'Usuário, e-mail ou senha inválidos.';
             }
+            $erro = 'E-mail ou senha incorretos.';
         } catch (PDOException $e) {
             $erro = 'Erro ao conectar com o banco de dados. Tente novamente.';
         }
     }
 }
-
-$titulo = 'Login';
-$menu = 'login';
-require __DIR__ . '/../app/views/partials/estilologin.php';
 ?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | GlowBella</title>
 
-<div class="card" style="min-height: 700px; display: flex; justify-content: center; align-items: center; border:none;">
-  <div class="card p-4 d-flex justify-content: center shadow-sm" style="min-height: 400px; width: 100%; max-width: 400px;">
-    <div class="card-body d-flex flex-column justify-content-center gap-3">
-      
-      <h2 class="h5 text-center mb-2">Acesse sua conta GlowBella</h2>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+</head>
+<body>
 
-      <?php if ($erro !== null): ?>
-        <div class="alert alert-danger py-2 text-center" role="alert">
-          <?= htmlspecialchars($erro) ?>
+<main class="login-pagina">
+    <div class="card shadow-sm login-cartao">
+        <div class="card-body p-4 d-flex flex-column gap-3">
+            <div class="text-center">
+                <div class="login-marca"><i class="bi bi-gem"></i> GlowBella</div>
+                <h1 class="h5 mt-2 mb-0">Acesse sua conta</h1>
+            </div>
+
+            <?php if ($erro !== null): ?>
+                <div class="alert alert-danger py-2 text-center mb-0" role="alert"><?= e($erro) ?></div>
+            <?php endif; ?>
+
+            <form method="post" action="<?= url('login.php') ?>" class="d-flex flex-column gap-3">
+                <?= csrf_campo() ?>
+
+                <div>
+                    <label for="ds_email" class="form-label">E-mail</label>
+                    <input type="email" class="form-control" id="ds_email" name="ds_email"
+                           value="<?= e($email) ?>" autocomplete="username" required autofocus>
+                </div>
+
+                <div>
+                    <label for="ds_senha" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="ds_senha" name="ds_senha"
+                           autocomplete="current-password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-2">Entrar</button>
+            </form>
         </div>
-      <?php endif; ?>
-
-      <form method="POST" action="" class="d-flex flex-column gap-3">
-        <div>
-          <label for="login" class="form-label">E-mail ou Nome de usuário</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            id="login" 
-            name="login" 
-            value="<?= htmlspecialchars($_POST['login'] ?? '') ?>" 
-            required 
-            autofocus
-          >
-        </div>
-
-        <div>
-          <label for="senha" class="form-label">Senha</label>
-          <input 
-            type="password" 
-            class="form-control" 
-            id="senha" 
-            name="senha" 
-            required
-          >
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100 mt-2">Entrar</button>
-      </form>
-
     </div>
-  </div>
-</div>
+</main>
 
 </body>
 </html>
