@@ -55,6 +55,7 @@ erDiagram
         int cd_usuario FK
         enum fg_tipo "entrada | saida"
         int qtd_movimentada
+        decimal vl_total "valor da venda (só saída Venda)"
         varchar ds_motivo
         datetime dt_movimentacao
     }

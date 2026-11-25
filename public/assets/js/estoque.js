@@ -15,6 +15,7 @@ if (formMovimentacao) {
     const MAX_SUGESTOES = 8;
 
     let produtoEscolhido = null;
+    let valorEditadoAMao = false;
     let sugestoes = [];
     let destacada = -1;
 
@@ -29,6 +30,8 @@ if (formMovimentacao) {
         textoEscolhido.textContent = produto ? unidades(produto.qtd) : '';
         fecharSugestoes();
         atualizarAvisoNaoCadastrado();
+        valorEditadoAMao = false;
+        atualizarValorVenda();
     }
 
     function fecharSugestoes() {
@@ -125,6 +128,7 @@ if (formMovimentacao) {
     campoBusca.addEventListener('input', () => {
         produtoEscolhido = null;
         textoEscolhido.textContent = '';
+        atualizarValorVenda();
         mostrarSugestoes();
         atualizarAvisoNaoCadastrado();
     });
@@ -154,12 +158,56 @@ if (formMovimentacao) {
         }
     });
 
-    // Trocar entrada/saída: refaz o aviso e confere se o escolhido ainda pode sair
+    // ---------- Motivo e valor da venda ----------
+    // Cada tipo tem a sua lista de motivos (vem do PHP: MOTIVOS_MOVIMENTACAO em app/services/estoque.php).
+    // "Venda" (saída) pede o valor, que vai para o Financeiro.
+    const campoMotivo = formMovimentacao.ds_motivo;
+    const motivosPorTipo = JSON.parse(campoMotivo.dataset.motivos);
+    const blocoMotivoOutro = document.getElementById('campo-motivo-outro');
+    const blocoValorVenda = document.getElementById('campo-valor-venda');
+    const campoValorVenda = formMovimentacao.vl_total;
+    const MOTIVO_VENDA = 'Venda';
+
+    function montarMotivos() {
+        const anterior = campoMotivo.value;
+        const opcoes = [['', 'Selecione...'], ...motivosPorTipo[tipoAtual()].map((motivo) => [motivo, motivo]), ['outro', 'Outro...']];
+
+        campoMotivo.replaceChildren(...opcoes.map(([valor, texto]) => new Option(texto, valor)));
+        // Mantém o motivo escolhido se ele também existe no novo tipo (ex.: "Ajuste de inventário")
+        campoMotivo.value = opcoes.some(([valor]) => valor === anterior) ? anterior : '';
+        atualizarCamposMotivo();
+    }
+
+    function ehVenda() {
+        return tipoAtual() === 'saida' && campoMotivo.value === MOTIVO_VENDA;
+    }
+
+    function atualizarCamposMotivo() {
+        blocoMotivoOutro.classList.toggle('d-none', campoMotivo.value !== 'outro');
+        blocoValorVenda.classList.toggle('d-none', !ehVenda());
+        atualizarValorVenda();
+    }
+
+    /** Sugere quantidade × preço de venda (até a pessoa mudar o valor à mão, ex.: desconto). */
+    function atualizarValorVenda() {
+        if (valorEditadoAMao || !ehVenda()) return;
+
+        const quantidade = parseInt(formMovimentacao.qtd_movimentada.value, 10);
+        const produto = produtoEscolhido || produtoPeloNomeDigitado();
+        campoValorVenda.value = produto && quantidade > 0 ? (quantidade * produto.preco).toFixed(2) : '';
+    }
+
+    campoMotivo.addEventListener('change', atualizarCamposMotivo);
+    formMovimentacao.qtd_movimentada.addEventListener('input', atualizarValorVenda);
+    campoValorVenda.addEventListener('input', () => { valorEditadoAMao = campoValorVenda.value !== ''; });
+
+    // Trocar entrada/saída: troca a lista de motivos, refaz o aviso e confere se o escolhido ainda pode sair
     formMovimentacao.querySelectorAll('[name="fg_tipo"]').forEach((opcao) => {
         opcao.addEventListener('change', () => {
             if (tipoAtual() === 'saida' && produtoEscolhido && produtoEscolhido.qtd === 0) {
                 textoEscolhido.textContent = 'Este produto está sem estoque: não dá para registrar saída.';
             }
+            montarMotivos();
             atualizarAvisoNaoCadastrado();
         });
     });
@@ -180,11 +228,17 @@ if (formMovimentacao) {
                 throw new GlowApiErro('Confira os campos destacados.', 422, { cd_produto: mensagem });
             }
 
+            const outroMotivo = campoMotivo.value === 'outro';
+            if (outroMotivo && form.ds_motivo_outro.value.trim() === '') {
+                throw new GlowApiErro('Confira os campos destacados.', 422, { ds_motivo_outro: 'Escreva o motivo.' });
+            }
+
             return {
                 cd_produto: produto.id,
                 fg_tipo: tipoAtual(),
                 qtd_movimentada: form.qtd_movimentada.value,
-                ds_motivo: form.ds_motivo.value.trim(),
+                ds_motivo: outroMotivo ? form.ds_motivo_outro.value.trim() : campoMotivo.value,
+                ...(ehVenda() ? { vl_total: campoValorVenda.value } : {}),
             };
         },
         aoSalvar: () => {
@@ -200,6 +254,7 @@ if (formMovimentacao) {
     document.querySelectorAll('[data-movimentar]').forEach((botao) => {
         botao.addEventListener('click', () => {
             document.getElementById(botao.dataset.tipo === 'saida' ? 'tipo-saida' : 'tipo-entrada').checked = true;
+            montarMotivos();
             escolherProduto(produtos.find((produto) => String(produto.id) === botao.dataset.movimentar) || null);
             document.getElementById('movimentar').scrollIntoView({ behavior: 'smooth', block: 'start' });
             formMovimentacao.qtd_movimentada.focus({ preventScroll: true });
