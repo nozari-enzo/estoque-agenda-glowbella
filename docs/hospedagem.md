@@ -69,6 +69,25 @@ define('APP_TIMEZONE', 'America/Sao_Paulo');
 
 > Precisa ver o erro técnico de uma página? Mude `APP_DEBUG` para `true`, veja o erro e **volte para `false`**.
 
+### HTTPS (o cadeado no navegador)
+
+O sistema tem login e dados das clientes. **Sem HTTPS**, a senha e esses dados passam pela internet sem criptografia, e qualquer pessoa na mesma rede Wi-Fi pode ler. **É obrigatório antes de a loja usar o sistema.**
+
+**1. Conferir se já está ativo.** Abra `https://glowbella.rf.gd/estoque-agenda-glowbella` (com **https**):
+- Apareceu o **cadeado** ao lado do endereço e o site abriu normal? O HTTPS já está ativo. Pule para o passo 3.
+- Apareceu **"Sua conexão não é particular"**, **"Não seguro"** ou o site não abriu? Faça o passo 2.
+
+**2. Ativar o certificado grátis da InfinityFree.**
+1. Client Area → **Free SSL Certificates** → **New SSL Certificate**.
+2. Escolha o domínio do site (`glowbella.rf.gd`) e siga as instruções da tela. Normalmente ela pede para criar um registro **CNAME** no painel para provar que o domínio é seu, e depois emite o certificado.
+3. Com o certificado emitido, use a opção de **instalar** na conta de hospedagem, na própria tela do certificado.
+4. A ativação pode levar de alguns minutos a algumas horas. Teste de novo como no passo 1.
+5. O certificado gratuito **vence** (normalmente em 90 dias). A InfinityFree avisa por e-mail. **Renove antes de vencer**, senão o site volta a aparecer como "não seguro".
+
+**3. Usar sempre https.**
+- No `config/config.php` do servidor, o `BASE_URL` começa com **`https://`**, como no modelo acima. Todos os links e formulários do sistema usam esse endereço, então quem entra pelo login continua no https.
+- Divulgue para a loja **só o endereço com https**, de preferência já salvo nos favoritos do computador da loja.
+
 ---
 
 ## 3. Atualizar a hospedagem (fim de sprint)
@@ -94,7 +113,7 @@ SELECT * FROM migracoes ORDER BY arquivo;
 
 O número da última linha é o que vai no próximo passo (ex.: `009`).
 
-> **Se der "Table 'migracoes' doesn't exist":** o banco foi montado à mão, sem registro. Use a tabela **"Histórico da hospedagem"** no fim deste guia. A instalação inicial (`main` de 19/11) foi até a **009**. Depois do primeiro pacote, a tabela `migracoes` passa a existir.
+> **Se der "Table 'migracoes' doesn't exist":** o banco foi montado à mão, sem registro. Use a tabela **"Histórico da hospedagem"** no fim deste guia. A instalação inicial (`main` de 19/11/2026) foi até a **009**. Depois do primeiro pacote, a tabela `migracoes` passa a existir.
 
 ### Passo 3: Gerar o pacote de migrations (no seu PC)
 
@@ -132,6 +151,7 @@ phpMyAdmin da hospedagem → selecione o banco → **Importar** → escolha `atu
 
 Abra o site, dê **Ctrl+F5** e confira:
 
+- [ ] O endereço abre com o **cadeado** (https), sem aviso de "não seguro".
 - [ ] O login funciona.
 - [ ] Início, Agenda, Clientes, Produtos, Estoque, Esterilização e Financeiro abrem sem erro.
 - [ ] Salvar alguma coisa funciona (ex.: editar um cliente).
@@ -157,13 +177,14 @@ Hoje o banco da hospedagem tem os **dados de exemplo** (`seed`), inclusive o log
    C:\xampp\php\php.exe database\gerar_atualizacao.php
    ```
    Sem `--depois-de`, ele inclui todas as migrations. Importe como no passo 5.
-4. **Criar o usuário da dona** (seção 5).
-5. **Entrar com ele** e fazer o cadastro inicial, nesta ordem:
+4. **Conferir o HTTPS** (seção 2): o site precisa abrir com o cadeado.
+5. **Criar o usuário da dona** (seção 5).
+6. **Entrar com ele** e fazer o cadastro inicial, nesta ordem:
    1. **Produtos → Categorias**
    2. **Produtos → Novo produto**, com a quantidade atual na "Quantidade inicial"
    3. **Clientes**
    4. **Agenda:** próximos atendimentos, com o valor
-6. Fazer um **backup** logo depois do cadastro inicial.
+7. Fazer um **backup** logo depois do cadastro inicial.
 
 Como não tem `seed`, **o admin de teste não existe** no banco real. Nunca use `--seed` com dados reais.
 
@@ -229,6 +250,7 @@ A InfinityFree é gratuita e **não garante backup**. O backup de vocês é o ú
 | Página sem estilo ou com comportamento antigo | Cache do navegador | Ctrl+F5 |
 | `config.php` ou `seed.sql` abrem no navegador | `.htaccess` não foi enviado | Reenviar os `.htaccess` (passo 4) e testar de novo |
 | "E-mail ou senha incorretos" com a senha certa | Usuário desativado ou não criado | `SELECT ... FROM admin` (seção 5) e gerar a senha de novo com `--sql` |
+| "Não seguro" ou "Sua conexão não é particular" | HTTPS não ativado ou certificado vencido | Seção 2, "HTTPS": ativar ou renovar o certificado |
 | "Duplicate column" ao importar | Migration já aplicada | Conferir `SELECT * FROM migracoes` antes de gerar o pacote |
 | Login funciona, mas salvar dá erro | Sessão antiga | Clicar em Sair e entrar de novo |
 
@@ -240,7 +262,7 @@ Uma linha por atualização (a mais nova embaixo).
 
 | Data | Versão da `main` | Última migration | Banco | Quem |
 |---|---|---|---|---|
-| ~19/11/2026 | PR #46 (login, todas as telas) | 009 | Teste (com `seed`) | Pedro |
+| 19/11/2026 | PR #46 (login, todas as telas) | 009 | Teste (com `seed`) | Pedro |
 | | | | | |
 
 **Próxima atualização (pendente):** quando a `dev` atual for para a `main`, entram a busca de produto no Estoque (PR #47) e as vendas de balcão no Financeiro (PR #48), com a migration **010**. Comando do pacote: `--depois-de 009`.
