@@ -19,3 +19,7 @@ desktop.ini
 # Ferramentas locais de desenvolvimento e capturas visuais
 node_modules/
 /artifacts/
+
+# Arquivos gerados para a hospedagem (database/gerar_atualizacao.php e criar_usuario.php --sql)
+/atualizacao-hospedagem.sql
+/usuario-hospedagem.sql

@@ -67,6 +67,8 @@ Não misture os dois jeitos: quem usa o phpMyAdmin deve continuar usando o phpMy
 
 O diagrama e as regras do banco estão em [`docs/banco-de-dados.md`](docs/banco-de-dados.md).
 
+**Site no ar (hospedagem):** instalar, atualizar no fim da sprint, criar usuários e fazer backup estão em [`docs/hospedagem.md`](docs/hospedagem.md).
+
 ### 5. Acessar
 
 - Sistema: http://localhost/estoque-agenda-glowbella/public/
@@ -117,7 +119,7 @@ estoque-agenda-glowbella/
 
 As páginas continuam acessíveis por `public/`. A pasta `app/` organiza o código usado por elas e não deve conter arquivos acessados diretamente pelo navegador. Ao implementar uma funcionalidade com regras ou consultas maiores, mantenha a tela em `public/<modulo>/` e separe a lógica do HTML dentro de `app/` para que a equipe encontre cada responsabilidade com facilidade.
 
-As telas de produtos, estoque, esterilização e financeiro incluem protótipos visuais com dados demonstrativos. Os filtros e a exibição dos campos de lote/validade rodam somente no navegador; as telas ainda não persistem dados. O Financeiro demonstra a separação entre valor do procedimento, venda da joia e compras, com referências à Agenda. Com as APIs prontas, a integração de cada tela segue o guia [`docs/front.md`](docs/front.md).
+Todas as telas já gravam no banco pelas APIs: a lista é montada em PHP e criar, editar e desativar passam pela API, como descrito no guia [`docs/front.md`](docs/front.md). O Financeiro soma os atendimentos concluídos da Agenda e as vendas de balcão (saídas de estoque com motivo "Venda"), menos as compras de fornecedor.
 
 Cada módulo usa o mesmo nome em todas as camadas:
 
