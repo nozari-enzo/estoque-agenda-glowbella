@@ -67,6 +67,10 @@ require __DIR__ . '/../../app/views/partials/header.php';
     <div class="alert alert-success" role="alert">Movimentação registrada e estoque atualizado.</div>
 <?php endif; ?>
 
+<?php if (isset($_GET['produto_novo'])): ?>
+    <div class="alert alert-success" role="alert">Produto cadastrado. A quantidade inicial já entrou no estoque.</div>
+<?php endif; ?>
+
 <section class="row g-3 mb-4" aria-label="Resumo do estoque">
     <div class="col-12 col-sm-6 col-xl-3">
         <article class="card-glow resumo-estoque h-100 p-3">
@@ -113,13 +117,24 @@ require __DIR__ . '/../../app/views/partials/header.php';
             <div class="alert alert-danger d-none" role="alert" data-erro-formulario></div>
             <div class="row g-3">
                 <div class="col-12 col-lg-5">
-                    <label class="form-label" for="cd_produto">Produto <span class="text-danger">*</span></label>
-                    <select class="form-select" id="cd_produto" name="cd_produto">
-                        <option value="">Selecione...</option>
-                        <?php foreach ($produtos as $produto): ?>
-                            <option value="<?= $produto['cd_produto'] ?>"><?= e($produto['nm_produto']) ?> (<?= $produto['qtd_produto'] ?> em estoque)</option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label class="form-label" for="busca-produto">Produto <span class="text-danger">*</span></label>
+                    <div class="busca-produto">
+                        <!-- name="cd_produto": os erros da API para esse campo aparecem aqui -->
+                        <input class="form-control" type="text" id="busca-produto" name="cd_produto" autocomplete="off"
+                               placeholder="Digite para buscar..." role="combobox" aria-autocomplete="list"
+                               aria-expanded="false" aria-controls="sugestoes-produto">
+                        <div class="list-group busca-produto-lista d-none" id="sugestoes-produto" role="listbox" aria-label="Produtos encontrados"></div>
+                    </div>
+                    <div class="form-text" id="produto-escolhido" aria-live="polite"></div>
+                    <div class="alert alert-warning py-2 px-3 mt-2 mb-0 d-none" id="produto-nao-cadastrado" role="status">
+                        Produto não cadastrado.
+                        <a class="alert-link" id="link-novo-produto" href="<?= url('produtos/criar.php?origem=estoque') ?>">Cadastrar novo produto</a>
+                    </div>
+                    <script type="application/json" id="dados-produtos"><?= json_encode(array_map(fn ($produto) => [
+                        'id'   => $produto['cd_produto'],
+                        'nome' => $produto['nm_produto'],
+                        'qtd'  => $produto['qtd_produto'],
+                    ], $produtos), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
                 </div>
                 <div class="col-12 col-sm-6 col-lg-3">
                     <span class="form-label d-block">Tipo <span class="text-danger">*</span></span>

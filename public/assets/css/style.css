@@ -973,3 +973,25 @@ h1, h2, h3, .titulo-elegante {
     font-size: 1.6rem;
     color: var(--glow-primaria);
 }
+
+/* Estoque: campo "Produto" com busca (lista de sugestões embaixo do campo) */
+.busca-produto {
+    position: relative;
+}
+
+.busca-produto-lista {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    max-height: 280px;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(46, 34, 48, 0.12);
+}
+
+.busca-produto-lista .list-group-item.active {
+    background-color: var(--glow-primaria-clara);
+    border-color: var(--glow-borda);
+    color: inherit;
+}

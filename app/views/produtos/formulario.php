@@ -3,6 +3,7 @@
  * Formulário de produto, usado por public/produtos/criar.php e editar.php.
  * Antes de incluir, defina:
  *   $produto    → [] no cadastro ou os dados de buscar_produto()
+ *   $voltarPara → (opcional) para onde ir depois de salvar; padrão: 'produtos/?salvo=1'
  *   $categorias → listar_categorias($pdo) (só as ativas)
  * O "name" de cada campo é o nome usado pela api/produtos.php.
  */
@@ -12,7 +13,8 @@ $valor = fn ($campo) => isset($produto[$campo]) ? number_format((float) $produto
 ?>
 <form id="form-produto" novalidate
       data-api="<?= e($editando ? 'api/produtos.php?id=' . $produto['cd_produto'] : 'api/produtos.php') ?>"
-      data-metodo="<?= $editando ? 'PUT' : 'POST' ?>">
+      data-metodo="<?= $editando ? 'PUT' : 'POST' ?>"
+      data-voltar="<?= e($voltarPara ?? 'produtos/?salvo=1') ?>">
 
     <div class="alert alert-danger d-none" role="alert" data-erro-formulario></div>
 
