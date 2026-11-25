@@ -3,6 +3,7 @@ require __DIR__ . '/../../app/bootstrap/init.php';
 require __DIR__ . '/../../app/repositories/agenda/agenda.php';
 require __DIR__ . '/../../app/repositories/movimentacoes/movimentacoes.php';
 require __DIR__ . '/../../app/repositories/produtos/produtos.php';
+require __DIR__ . '/../../app/services/estoque.php';
 
 // Mês do relatório (?mes=11&ano=2026). Valores inválidos voltam para o mês atual.
 $numeroDaUrl = fn (string $nome): int => is_string($_GET[$nome] ?? null) && ctype_digit($_GET[$nome]) ? (int) $_GET[$nome] : 0;
@@ -28,15 +29,22 @@ $agendamentos = array_filter(
     fn ($a) => $a['fg_status'] !== 'cancelado'
 );
 
-// Gastos: entradas de estoque do mês (menos o estoque inicial do cadastro) × preço de compra do produto
+// Vendas de balcão: saídas de estoque com motivo "Venda" (o valor é informado ao registrar a saída)
+$vendas = array_filter(
+    listar_movimentacoes($pdo, ['fg_tipo' => 'saida', 'de' => $inicioMes, 'ate' => $fimMes, 'limite' => 500]),
+    fn ($m) => $m['ds_motivo'] === MOTIVO_VENDA && $m['vl_total'] !== null
+);
+
+// Gastos: entradas com motivo "Compra fornecedor" × preço de compra do produto.
+// Estoque inicial, devolução e ajuste não são dinheiro saindo, então não contam.
 $precoCompra = array_column(listar_produtos($pdo, ['fg_status' => 'todos']), 'vl_compra', 'cd_produto');
 $compras = array_filter(
     listar_movimentacoes($pdo, ['fg_tipo' => 'entrada', 'de' => $inicioMes, 'ate' => $fimMes, 'limite' => 500]),
-    fn ($m) => $m['ds_motivo'] !== 'Estoque inicial'
+    fn ($m) => $m['ds_motivo'] === MOTIVO_COMPRA
 );
 
 $lancamentos = [];
-$totais = ['recebido' => 0.0, 'previsto' => 0.0, 'compras' => 0.0];
+$totais = ['recebido' => 0.0, 'vendas' => 0.0, 'previsto' => 0.0, 'compras' => 0.0];
 $porCliente = [];
 $semValor = 0;
 
@@ -66,13 +74,26 @@ foreach ($agendamentos as $agendamento) {
     ];
 }
 
+foreach ($vendas as $venda) {
+    $totais['vendas'] += $venda['vl_total'];
+
+    $lancamentos[] = [
+        'data'      => $venda['dt_movimentacao'],
+        'descricao' => $venda['qtd_movimentada'] . '× ' . $venda['nm_produto'],
+        'tipo'      => 'venda',
+        'vinculo'   => 'Saída de estoque',
+        'link'      => url('estoque/?produto=' . $venda['cd_produto'] . '#historico'),
+        'valor'     => $venda['vl_total'],
+    ];
+}
+
 foreach ($compras as $compra) {
     $valor = $compra['qtd_movimentada'] * ($precoCompra[$compra['cd_produto']] ?? 0);
     $totais['compras'] += $valor;
 
     $lancamentos[] = [
         'data'      => $compra['dt_movimentacao'],
-        'descricao' => $compra['qtd_movimentada'] . '× ' . $compra['nm_produto'] . ($compra['ds_motivo'] ? ' · ' . $compra['ds_motivo'] : ''),
+        'descricao' => $compra['qtd_movimentada'] . '× ' . $compra['nm_produto'],
         'tipo'      => 'compra',
         'vinculo'   => 'Entrada de estoque',
         'link'      => url('estoque/?produto=' . $compra['cd_produto'] . '#historico'),
@@ -83,9 +104,11 @@ foreach ($compras as $compra) {
 usort($lancamentos, fn ($a, $b) => strcmp($b['data'], $a['data']));
 uasort($porCliente, fn ($a, $b) => ($b['recebido'] + $b['previsto']) <=> ($a['recebido'] + $a['previsto']));
 
-$saldo = $totais['recebido'] - $totais['compras'];
+$entrou = $totais['recebido'] + $totais['vendas'];
+$saldo = $entrou - $totais['compras'];
 $tipos = [
     'recebido' => ['Atendimento concluído', 'text-bg-primary'],
+    'venda'    => ['Venda', 'text-bg-success'],
     'previsto' => ['Atendimento agendado', 'status-agendado'],
     'compra'   => ['Compra', 'text-bg-secondary'],
 ];
@@ -99,7 +122,7 @@ require __DIR__ . '/../../app/views/partials/header.php';
 <div class="cabecalho-pagina">
     <div>
         <h1>Financeiro</h1>
-        <p>Receitas dos atendimentos da agenda e gastos com compras de estoque.</p>
+        <p>Receitas dos atendimentos e das vendas de balcão, e gastos com compras de estoque.</p>
     </div>
     <a class="btn btn-outline-primary" href="<?= url('agendamentos/') ?>">
         <i class="bi bi-calendar-heart" aria-hidden="true"></i> Abrir Agenda
@@ -117,7 +140,12 @@ require __DIR__ . '/../../app/views/partials/header.php';
         <article class="card-glow resumo-financeiro h-100 p-3">
             <div class="d-flex align-items-center gap-3">
                 <span class="icone-circulo"><i class="bi bi-heart-pulse" aria-hidden="true"></i></span>
-                <div><p class="text-muted small mb-1">Recebido (concluídos)</p><strong class="fs-5" data-total="recebido"><?= $moeda($totais['recebido']) ?></strong></div>
+                <div>
+                    <p class="text-muted small mb-1">Recebido</p>
+                    <strong class="fs-5" data-total="recebido"><?= $moeda($entrou) ?></strong>
+                    <p class="small text-muted mb-0">Atendimentos: <span data-total="atendimentos"><?= $moeda($totais['recebido']) ?></span></p>
+                    <p class="small text-muted mb-0">Vendas: <span data-total="vendas"><?= $moeda($totais['vendas']) ?></span></p>
+                </div>
             </div>
         </article>
     </div>
@@ -141,7 +169,7 @@ require __DIR__ . '/../../app/views/partials/header.php';
         <article class="card-glow resumo-financeiro h-100 p-3">
             <div class="d-flex align-items-center gap-3">
                 <span class="icone-circulo"><i class="bi bi-wallet2" aria-hidden="true"></i></span>
-                <div><p class="text-muted small mb-1">Saldo (recebido − compras)</p><strong class="fs-5 <?= $saldo < 0 ? 'text-danger' : '' ?>" data-total="saldo"><?= $moeda($saldo) ?></strong></div>
+                <div><p class="text-muted small mb-1">Saldo (recebido − gastos)</p><strong class="fs-5 <?= $saldo < 0 ? 'text-danger' : '' ?>" data-total="saldo"><?= $moeda($saldo) ?></strong></div>
             </div>
         </article>
     </div>
@@ -157,14 +185,14 @@ require __DIR__ . '/../../app/views/partials/header.php';
 <section class="card-glow p-3 p-lg-4 mb-4" aria-labelledby="titulo-lancamentos" data-lista-filtro data-busca="busca-financeiro" data-tipo="tipo-financeiro">
     <div class="mb-3">
         <h2 class="h4 mb-1" id="titulo-lancamentos">Lançamentos de <?= e($nomeMes) ?></h2>
-        <p class="text-muted mb-0">Atendimentos da agenda (por cliente e dia) e compras registradas no estoque.</p>
+        <p class="text-muted mb-0">Atendimentos da agenda (por cliente e dia), vendas de balcão e compras registradas no estoque.</p>
     </div>
 
     <?php if (!$lancamentos): ?>
         <div class="estado-vazio">
             <i class="bi bi-cash-coin" aria-hidden="true"></i>
             <h2>Nenhum lançamento neste mês</h2>
-            <p class="mb-0">Os atendimentos com valor e as compras de estoque aparecem aqui.</p>
+            <p class="mb-0">Os atendimentos com valor, as vendas e as compras de estoque aparecem aqui.</p>
         </div>
     <?php else: ?>
         <div class="row g-2 mb-3">
@@ -215,7 +243,7 @@ require __DIR__ . '/../../app/views/partials/header.php';
                             <td data-label="Lançamento"><?= e($lancamento['descricao']) ?></td>
                             <td data-label="Tipo"><span class="badge <?= $classeTipo ?>"><?= $rotuloTipo ?></span></td>
                             <td data-label="Cliente / origem"><a href="<?= e($lancamento['link']) ?>"><?= e($lancamento['vinculo']) ?></a></td>
-                            <td data-label="Valor" class="text-md-end text-nowrap fw-semibold <?= $saida ? 'text-danger' : ($lancamento['tipo'] === 'recebido' ? 'text-success' : 'text-muted') ?>">
+                            <td data-label="Valor" class="text-md-end text-nowrap fw-semibold <?= $saida ? 'text-danger' : ($lancamento['tipo'] === 'previsto' ? 'text-muted' : 'text-success') ?>">
                                 <?= ($saida ? '− ' : '+ ') . $moeda($lancamento['valor']) ?>
                             </td>
                         </tr>
@@ -260,7 +288,8 @@ require __DIR__ . '/../../app/views/partials/header.php';
 <?php endif; ?>
 
 <p class="small text-muted mt-3 mb-0"><i class="bi bi-info-circle" aria-hidden="true"></i>
-    * Gasto estimado: quantidade de cada entrada de estoque × o preço de compra cadastrado no produto (o estoque inicial do cadastro não entra).
-    O valor de cada atendimento vem do campo "Valor do procedimento" da agenda. Outras despesas e taxas não estão incluídas.</p>
+    * Gasto estimado: quantidade de cada entrada de estoque com motivo "Compra fornecedor" × o preço de compra cadastrado no produto.
+    O valor de cada atendimento vem do campo "Valor do procedimento" da agenda, e o de cada venda de balcão, do "Valor da venda" informado na saída de estoque.
+    Outras despesas e taxas não estão incluídas.</p>
 
 <?php require __DIR__ . '/../../app/views/partials/footer.php'; ?>

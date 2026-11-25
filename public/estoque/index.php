@@ -2,6 +2,7 @@
 require __DIR__ . '/../../app/bootstrap/init.php';
 require __DIR__ . '/../../app/repositories/produtos/produtos.php';
 require __DIR__ . '/../../app/repositories/movimentacoes/movimentacoes.php';
+require __DIR__ . '/../../app/services/estoque.php';
 
 // Validade "próxima": vence nos próximos 60 dias
 const DIAS_VALIDADE_PROXIMA = 60;
@@ -41,7 +42,6 @@ $produtoHistorico = $cdProdutoHistorico ? buscar_produto($pdo, $cdProdutoHistori
 $movimentacoes = listar_movimentacoes($pdo, ['cd_produto' => $produtoHistorico ? $cdProdutoHistorico : null, 'limite' => 20]);
 
 $finalidades = ['procedimento' => 'Uso em procedimento', 'venda' => 'Venda / aplicação'];
-$motivos = ['Compra fornecedor', 'Venda', 'Uso em procedimento', 'Perda ou avaria', 'Ajuste de inventário', 'Devolução'];
 
 $titulo = 'Estoque';
 $menu = 'estoque';
@@ -65,6 +65,10 @@ require __DIR__ . '/../../app/views/partials/header.php';
 
 <?php if (isset($_GET['salvo'])): ?>
     <div class="alert alert-success" role="alert">Movimentação registrada e estoque atualizado.</div>
+<?php endif; ?>
+
+<?php if (isset($_GET['produto_novo'])): ?>
+    <div class="alert alert-success" role="alert">Produto cadastrado. A quantidade inicial já entrou no estoque.</div>
 <?php endif; ?>
 
 <section class="row g-3 mb-4" aria-label="Resumo do estoque">
@@ -113,13 +117,25 @@ require __DIR__ . '/../../app/views/partials/header.php';
             <div class="alert alert-danger d-none" role="alert" data-erro-formulario></div>
             <div class="row g-3">
                 <div class="col-12 col-lg-5">
-                    <label class="form-label" for="cd_produto">Produto <span class="text-danger">*</span></label>
-                    <select class="form-select" id="cd_produto" name="cd_produto">
-                        <option value="">Selecione...</option>
-                        <?php foreach ($produtos as $produto): ?>
-                            <option value="<?= $produto['cd_produto'] ?>"><?= e($produto['nm_produto']) ?> (<?= $produto['qtd_produto'] ?> em estoque)</option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label class="form-label" for="busca-produto">Produto <span class="text-danger">*</span></label>
+                    <div class="busca-produto">
+                        <!-- name="cd_produto": os erros da API para esse campo aparecem aqui -->
+                        <input class="form-control" type="text" id="busca-produto" name="cd_produto" autocomplete="off"
+                               placeholder="Digite para buscar..." role="combobox" aria-autocomplete="list"
+                               aria-expanded="false" aria-controls="sugestoes-produto">
+                        <div class="list-group busca-produto-lista d-none" id="sugestoes-produto" role="listbox" aria-label="Produtos encontrados"></div>
+                    </div>
+                    <div class="form-text" id="produto-escolhido" aria-live="polite"></div>
+                    <div class="alert alert-warning py-2 px-3 mt-2 mb-0 d-none" id="produto-nao-cadastrado" role="status">
+                        Produto não cadastrado.
+                        <a class="alert-link" id="link-novo-produto" href="<?= url('produtos/criar.php?origem=estoque') ?>">Cadastrar novo produto</a>
+                    </div>
+                    <script type="application/json" id="dados-produtos"><?= json_encode(array_map(fn ($produto) => [
+                        'id'   => $produto['cd_produto'],
+                        'nome' => $produto['nm_produto'],
+                        'qtd'  => $produto['qtd_produto'],
+                        'preco' => (float) $produto['vl_produto'],
+                    ], $produtos), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
                 </div>
                 <div class="col-12 col-sm-6 col-lg-3">
                     <span class="form-label d-block">Tipo <span class="text-danger">*</span></span>
@@ -134,14 +150,29 @@ require __DIR__ . '/../../app/views/partials/header.php';
                     <label class="form-label" for="qtd_movimentada">Quantidade <span class="text-danger">*</span></label>
                     <input class="form-control" type="number" id="qtd_movimentada" name="qtd_movimentada" min="1" step="1" placeholder="0">
                 </div>
-                <div class="col-12">
-                    <label class="form-label" for="ds_motivo">Motivo</label>
-                    <input class="form-control" id="ds_motivo" name="ds_motivo" maxlength="150" list="motivos" placeholder="Ex.: Compra fornecedor">
-                    <datalist id="motivos">
-                        <?php foreach ($motivos as $motivo): ?>
-                            <option value="<?= e($motivo) ?>">
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="ds_motivo">Motivo <span class="text-danger">*</span></label>
+                    <!-- As opções mudam com o tipo: estoque.js remonta a lista com data-motivos ao trocar entrada/saída -->
+                    <select class="form-select" id="ds_motivo" name="ds_motivo"
+                            data-motivos="<?= e(json_encode(MOTIVOS_MOVIMENTACAO, JSON_UNESCAPED_UNICODE)) ?>">
+                        <option value="">Selecione...</option>
+                        <?php foreach (MOTIVOS_MOVIMENTACAO['entrada'] as $motivo): ?>
+                            <option value="<?= e($motivo) ?>"><?= e($motivo) ?></option>
                         <?php endforeach; ?>
-                    </datalist>
+                        <option value="outro">Outro...</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-6 d-none" id="campo-motivo-outro">
+                    <label class="form-label" for="ds_motivo_outro">Qual motivo? <span class="text-danger">*</span></label>
+                    <input class="form-control" id="ds_motivo_outro" name="ds_motivo_outro" maxlength="150" placeholder="Ex.: Brinde para cliente">
+                </div>
+                <div class="col-12 col-md-6 d-none" id="campo-valor-venda">
+                    <label class="form-label" for="vl_total">Valor da venda <span class="text-danger">*</span></label>
+                    <div class="input-group has-validation">
+                        <span class="input-group-text">R$</span>
+                        <input class="form-control" type="number" id="vl_total" name="vl_total" min="0" step="0.01" placeholder="0,00">
+                    </div>
+                    <div class="form-text">Quantidade × preço de venda do produto. Mude se deu desconto. Entra no Financeiro.</div>
                 </div>
             </div>
             <div class="d-flex justify-content-end mt-3">
@@ -278,7 +309,12 @@ require __DIR__ . '/../../app/views/partials/header.php';
                             <td data-label="Produto"><?= e($movimentacao['nm_produto']) ?></td>
                             <td data-label="Tipo"><span class="badge <?= $entrada ? 'status-concluido' : 'status-agendado' ?>"><?= $entrada ? 'Entrada' : 'Saída' ?></span></td>
                             <td data-label="Quantidade" class="text-md-end"><strong><?= ($entrada ? '+' : '−') . $movimentacao['qtd_movimentada'] ?></strong></td>
-                            <td data-label="Motivo"><?= $movimentacao['ds_motivo'] ? e($movimentacao['ds_motivo']) : '<span class="text-muted">—</span>' ?></td>
+                            <td data-label="Motivo">
+                                <?= $movimentacao['ds_motivo'] ? e($movimentacao['ds_motivo']) : '<span class="text-muted">—</span>' ?>
+                                <?php if ($movimentacao['vl_total'] !== null): ?>
+                                    <span class="text-muted text-nowrap">· R$ <?= number_format($movimentacao['vl_total'], 2, ',', '.') ?></span>
+                                <?php endif; ?>
+                            </td>
                             <td data-label="Registrado por"><?= $movimentacao['nm_usuario'] ? e($movimentacao['nm_usuario']) : '<span class="text-muted">—</span>' ?></td>
                         </tr>
                     <?php endforeach; ?>

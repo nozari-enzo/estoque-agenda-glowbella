@@ -29,7 +29,7 @@ if (formProduto) {
     glowFormulario(formProduto, {
         api: formProduto.dataset.api,
         method: formProduto.dataset.metodo,
-        aoSalvar: () => { window.location.href = glowUrl('produtos/?salvo=1'); },
+        aoSalvar: () => { window.location.href = glowUrl(formProduto.dataset.voltar || 'produtos/?salvo=1'); },
     });
 }
 

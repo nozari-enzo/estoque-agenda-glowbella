@@ -8,7 +8,7 @@
 
 const MOVIMENTACAO_COLUNAS = '
     m.cd_movimentacao, m.cd_produto, p.nm_produto, m.fg_tipo, m.qtd_movimentada,
-    m.ds_motivo, m.dt_movimentacao, m.cd_usuario, u.nm_usuario
+    m.vl_total, m.ds_motivo, m.dt_movimentacao, m.cd_usuario, u.nm_usuario
 ';
 
 /**
@@ -76,10 +76,13 @@ function buscar_movimentacao(PDO $pdo, int $cdMovimentacao): ?array
 function inserir_movimentacao(PDO $pdo, array $dados, ?int $cdUsuario): int
 {
     $stmt = $pdo->prepare(
-        'INSERT INTO movimentacao (cd_produto, cd_usuario, fg_tipo, qtd_movimentada, ds_motivo)
-         VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO movimentacao (cd_produto, cd_usuario, fg_tipo, qtd_movimentada, vl_total, ds_motivo)
+         VALUES (?, ?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$dados['cd_produto'], $cdUsuario, $dados['fg_tipo'], $dados['qtd_movimentada'], $dados['ds_motivo']]);
+    $stmt->execute([
+        $dados['cd_produto'], $cdUsuario, $dados['fg_tipo'], $dados['qtd_movimentada'],
+        $dados['vl_total'] ?? null, $dados['ds_motivo'],
+    ]);
 
     return (int) $pdo->lastInsertId();
 }
@@ -89,6 +92,7 @@ function formatar_movimentacao(array $movimentacao): array
     $movimentacao['cd_movimentacao'] = (int) $movimentacao['cd_movimentacao'];
     $movimentacao['cd_produto']      = (int) $movimentacao['cd_produto'];
     $movimentacao['qtd_movimentada'] = (int) $movimentacao['qtd_movimentada'];
+    $movimentacao['vl_total']        = $movimentacao['vl_total'] === null ? null : (float) $movimentacao['vl_total'];
     $movimentacao['cd_usuario']      = $movimentacao['cd_usuario'] === null ? null : (int) $movimentacao['cd_usuario'];
 
     return $movimentacao;
